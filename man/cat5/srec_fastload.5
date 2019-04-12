@@ -1,0 +1,65 @@
+srec_fastload(5)              File Formats Manual             srec_fastload(5)
+
+
+
+NNAAMMEE
+       srec_fastload - LSI Logic Fast Load file format
+
+DDEESSCCRRIIPPTTIIOONN
+       The  FastLoad  Format uses a compressed ASCII format that permits files
+       to be downloaded in less than half  the  time  taken  for  Motorola  S-
+       records.
+
+       The  base-64  encoding  used  is "A-Za-z0-9,.".  The data is encoded in
+       groups of 4 characters (3 bytes, 24 bits).
+
+       The character '/' is used to introduce  a  special  function.   Special
+       functions are:
+
+       A_n_n_n_n_n_n Defines an address.
+
+       B_n_n     Define a single byte.
+
+       C_n_n_n_n   Compare  the  checksums.   The  checksum  is  a simple positive
+               16-bit sum, of the data bytes only.
+
+       EAA     Define the program's entry point.  The address will be the cur-
+               rent  address  as  defined by the AA command.  (The _A_A number in
+               this command is ignored.)  This must be the last entry  in  the
+               file.
+
+       KAA     Clear  the  checksum.   (The  _A_A  number  in  this  command  is
+               ignored.)
+
+       S_n_a_m_e,X Define a symbol.  The address of the symbol will be the current
+               address as defined by the AA command.
+
+       Z_n_n     Clear a number of bytes.
+
+   SSiizzee MMuullttiipplliieerr
+       In general, binary data will expand in sized by approximately 1.4 times
+       when represented with this format.
+
+EEXXAAMMPPLLEE
+       Here is an example LSI Logic Fast Load format file.   It  contains  the
+       data "Hello, World[rq] to be loaded at address 0.
+              /AAAA
+              SGVsbG8sIFdvcmxk/BAK/CARS/AAAA/EAA
+
+CCOOPPYYRRIIGGHHTT
+       _s_r_e_c___c_a_t version 1.64
+       Copyright  (C)  1998,  1999,  2000, 2001, 2002, 2003, 2004, 2005, 2006,
+       2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 Peter Miller
+
+       The _s_r_e_c___c_a_t program comes with ABSOLUTELY NO WARRANTY; for details use
+       the '_s_r_e_c___c_a_t _-_V_E_R_S_i_o_n _L_i_c_e_n_s_e' command.  This is free software and you
+       are welcome to redistribute it under certain  conditions;  for  details
+       use the '_s_r_e_c___c_a_t _-_V_E_R_S_i_o_n _L_i_c_e_n_s_e' command.
+
+MMAAIINNTTAAIINNEERR
+       Scott Finneran   E-Mail:   scottfinneran@yahoo.com.au
+       Peter Miller     E-Mail:   pmiller@opensource.org.au
+
+
+
+Reference Manual                    SRecord                   srec_fastload(5)

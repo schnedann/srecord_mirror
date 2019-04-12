@@ -1,0 +1,188 @@
+srec_cmp(1)                 General Commands Manual                srec_cmp(1)
+
+
+
+NNAAMMEE
+       srec_cmp - compare two EPROM load files for equality
+
+SSYYNNOOPPSSIISS
+       ssrreecc__ccmmpp [ _o_p_t_i_o_n...  ] _f_i_l_e_n_a_m_e...
+       ssrreecc__ccmmpp --HHeellpp
+       ssrreecc__ccmmpp --VVEERRSSiioonn
+
+DDEESSCCRRIIPPTTIIOONN
+       The _s_r_e_c___c_m_p program is used to compare two EPROM load files for equal-
+       ity.  This comparison is performed irrespective of the  load  order  of
+       the data in each of the files.
+
+IINNPPUUTT FFIILLEE SSPPEECCIIFFIICCAATTIIOONNSS
+       Input  may  be  qualified in two ways: you may specify a data file or a
+       data generator.  format and you may specify filters to apply  to  them.
+       An input file specification looks like this:
+              _d_a_t_a_-_f_i_l_e [ _f_i_l_t_e_r ... ]
+              _d_a_t_a_-_g_e_n_e_r_a_t_o_r [ _f_i_l_t_e_r ... ]
+
+   DDaattaa FFiilleess
+       Input  from  data  files is specified by file name and format name.  An
+       input file specification looks like this:
+              _f_i_l_e_n_a_m_e [ _f_o_r_m_a_t ][ -ignore-checksums ]
+       The default format is Motorola S-Record format,  but  _m_a_n_y  others  are
+       also understood.
+
+   DDaattaa GGeenneerraattoorrss
+       It  is also possible to generate data, rather than read it from a file.
+       You may use a generator anywhere you could use a file.  An input gener-
+       ator specification looks like this:
+              --GGEENNeerraattee _a_d_d_r_e_s_s_-_r_a_n_g_e --_d_a_t_a_-_s_o_u_r_c_e
+       Generators include random data and various forms of constant data.
+
+   CCoommmmoonn MMaannuuaall PPaaggee
+       See  _s_r_e_c___i_n_p_u_t(1)  for  complete  details  of  input specifiers.  This
+       description is in a separate manual page because it is common  to  more
+       than one SRecord command.
+
+OOPPTTIIOONNSS
+       The following options are understood:
+
+       @@_f_i_l_e_n_a_m_e
+               The  named  text file is read for additional command line argu-
+               ments.  Arguments are separated by  white  space  (space,  tab,
+               newline,  _e_t_c).   There  is no wildcard mechanism.  There is no
+               quoting mechanism.  Comments, which start with '##'  and  extend
+               to the end of the line, are ignored.  Blank lines are ignored.
+
+       --HHeellpp
+               Provide some help with using the _s_r_e_c___c_m_p program.
+
+       --IIGGnnoorree__CChheecckkssuummss
+               The  --IIGGnnoorree--CChheecckkssuummss  option  may be used to disable checksum
+               validation of input files, for those formats which have  check-
+               sums  at  all.  Note that the checksum values are still read in
+               and parsed (so it is still an error if they  are  missing)  but
+               their  values  are not checked.  Used after an input file name,
+               the option affects that file alone; used anywhere else  on  the
+               command line, it applies to all following files.
+
+       --EEnnaabbllee__SSeeqquueennccee__WWaarrnniinnggss
+               This  option  may  be used to enable warnings about input files
+               where the data records are not in  strictly  ascending  address
+               order.  Only one warning is issued per input file.  This is the
+               default.
+
+               NNoottee:: the output of _s_r_e_c___c_a_t(1) is always in this order.
+
+               NNoottee:: This option must be used _b_e_f_o_r_e the input file.  This  is
+               because  if  there  are several files on the command line, each
+               may need different settings.   The  setting  remains  in  force
+               until the next --DDiissaabbllee__SSeeqquueennccee__WWaarrnniinnggss option.
+
+       --DDiissaabbllee__SSeeqquueennccee__WWaarrnniinnggss
+               This  option  may be used to disable warnings about input files
+               where the data records are not in  strictly  ascending  address
+               order.
+
+               NNoottee:: This option must be used _b_e_f_o_r_e the offending input file.
+               This is because if there are several files on the command line,
+               each may need different settings.  The setting remains in force
+               until the next --EEnnssaabbllee__SSeeqquueennccee__WWaarrnniinnggss option.
+
+       --rreedduunnddaanntt--bbyytteess==_v_a_l_u_e
+               Use this option to permit a file to  contain  redundant  values
+               for  some  memory locations.  The default is for this condition
+               to be a warning.
+
+               ignore
+                   No warning or error is issued whena redundant settings  are
+                   detected.
+
+               warning
+                   A warning is issued when a redundant settings are observed,
+                   the warning includes the problematic address.
+
+               error
+                   A fatal error is  issued  when  a  redundant  settings  are
+                   observed,  the fatal error message includes the problematic
+                   address and byte value.
+
+       --ccoonnttrraaddiiccttoorryy--bbyytteess==_v_a_l_u_e
+               Use this option to permit a file to contain contradictory  val-
+               ues  for some memory locations.  The last value in the input(s)
+               will be used.  The default is for this condition to be a  fatal
+               error.
+
+               ignore
+                   No warning or error is issued when contradictory setting is
+                   detected.
+
+               warning
+                   A warning is  issued  when  a  vontradictory  settings  are
+                   observed, the warning includes the problematic address, and
+                   values.
+
+               error
+                   A fatal error is issued  when  contradictory  settings  are
+                   observed,  the fatal error message includes the problematic
+                   address and byte values.
+
+       --VVEERRSSiioonn
+               Print the version of the _s_r_e_c___c_m_p program being executed.
+
+       --VVeerrbboossee
+               This option may be used to obtain more  information  about  how
+               and  where  the  two files differ.  Please note that this takes
+               longer, and the output can be voluminous.
+
+       All other options will produce a diagnostic error.
+
+       All options may be abbreviated; the abbreviation is documented  as  the
+       upper  case  letters,  all  lower  case letters and underscores (_) are
+       optional.  You must use consecutive sequences of optional letters.
+
+       All options are case insensitive, you may type them in  upper  case  or
+       lower case or a combination of both, case is not important.
+
+       For example: the arguments "-help", "-HEL" and "-h" are all interpreted
+       to mean the --HHeellpp option.  The argument "-hlp" will not be  understood,
+       because consecutive optional characters were not supplied.
+
+       Options  and  other  command line arguments may be mixed arbitrarily on
+       the command line.
+
+       The GNU long option names are understood.  Since all option  names  for
+       _s_r_e_c___c_m_p  are  long,  this  means  ignoring the extra leading "-".  The
+       "----_o_p_t_i_o_n==_v_a_l_u_e" convention is also understood.
+
+EEXXIITT SSTTAATTUUSS
+       The _s_r_e_c___c_m_p command will exit with a status of 1 on  any  error.   The
+       _s_r_e_c___c_m_p  command  will  only  exit  with a status of 0 if there are no
+       errors.
+
+EEXXAAMMPPLLEE
+       A common use for the _s_r_e_c___c_m_p command is to verify  that  a  particular
+       signature is present in the code.  In this example, the signature is in
+       a file called "signature[rq], and the EPROM image is in a  file  called
+       "image[rq].  We assume they are both Motorola S-Record format, although
+       this will work for all formats:
+              srec_cmp signature  image -crop -within signature
+       The signature need not be at the start of memory, nor need  it  be  one
+       single  contiguous piece of memory.  In the above example, the portions
+       of the image which have the same address range  as  the  signature  are
+       compared with the signature.
+
+CCOOPPYYRRIIGGHHTT
+       _s_r_e_c___c_m_p version 1.64
+       Copyright  (C)  1998,  1999,  2000, 2001, 2002, 2003, 2004, 2005, 2006,
+       2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 Peter Miller
+
+       The _s_r_e_c___c_m_p program comes with ABSOLUTELY NO WARRANTY; for details use
+       the '_s_r_e_c___c_m_p _-_V_E_R_S_i_o_n _L_i_c_e_n_s_e' command.  This is free software and you
+       are welcome to redistribute it under certain  conditions;  for  details
+       use the '_s_r_e_c___c_m_p _-_V_E_R_S_i_o_n _L_i_c_e_n_s_e' command.
+
+MMAAIINNTTAAIINNEERR
+       Scott Finneran   E-Mail:   scottfinneran@yahoo.com.au
+       Peter Miller     E-Mail:   pmiller@opensource.org.au
+
+
+
+Reference Manual                    SRecord                        srec_cmp(1)

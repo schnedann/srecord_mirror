@@ -1,0 +1,133 @@
+srec_ti_tagged_16(5)          File Formats Manual         srec_ti_tagged_16(5)
+
+
+
+NNAAMMEE
+       srec_ti_tagged_16 - Texas Instruments Tagged (SDSMAC 320) file format
+
+DDEESSCCRRIIPPTTIIOONN
+       This  format is also known as the _T_I_-_T_a_g_g_e_d or _T_e_x_a_s _I_n_s_t_r_u_m_e_n_t_s _S_D_S_M_A_C
+       _(_3_2_0_) format.
+
+       This format allows binary files to be uploaded and  downloaded  between
+       two  computer  systems,  typically between a computer system (such as a
+       PC, Macintosh, or workstation) and an emulator or evaluation board  for
+       16-bit microcontrollers and microprocessors.
+
+   TThhee LLiinneess
+       Unlike  many  other  object formats, the lines themselves are not espe-
+       cially significant.  The format consits of a number of  _t_a_g_g_e_d  fields,
+       and lines are composed of a series of these fields.
+
+                          Tag   Description
+                          ---------------------------------
+                          *     Data byte.
+                          :     End of file.
+                          0     File header (optional).
+                          7     Checksum.
+                          8     Dummy checksum (ignored).
+                          9     Word Address.
+                          B     Data word.
+                          F     End of data record.
+                          K     Program         identifier
+                                (optional).
+
+   DDaattaa BByyttee
+                                     +--+---+---+
+                                     |B | _n | _n |
+       One byte of data.  The _n_n is 8+--b-i+t--b-i+g---e-n+dian hexadecimal.
+
+   EEnndd ooff FFiillee
+                                     +--+------+
+                                     |: | CRLF |
+       The end of data is indicated b+y--t+h-i-s--t-a-g+.  The end of line sequence (LF
+       on Unix systems, CRLF on PCs) follows this tag.
+
+   FFiillee HHeeaaddeerr
+                               +--+--------+----------+
+                               |0 | _l_e_n_g_t_h | _f_i_l_e_n_a_m_e |
+       The optional start-of-fi+l-e-+r-e-c-o-r-d--b-e+g-i-n-s--w-i-t-h--a+tag character ('0') and
+       a 12-character file header. The first four characters are the count (in
+       hex)  of  the  16-bit  data word values (B) which follow, not including
+       data byte values (*). The remaining file header characters are the name
+       of the file and may be any ASCII characters, blank padded.
+
+   CChheecckkssuumm
+                                 +--+---+---+---+---+
+                                 |7 | _n | _n | _n | _n |
+       The  checksum  is  the  2s+--c+o-m-p-l+e-m-e-n+t--s-u+m--o-f+the 8-bit ASCII values of
+       characters, beginning with the first tag character and ending with  the
+       checksum tag character (7).  The _n_n_n_n is 16-bit big-endian hexadecimal.
+
+   DDuummmmyy CChheecckkssuumm
+                                 +--+---+---+---+---+
+                                 |8 | _n | _n | _n | _n |
+       The  checksum  is  the  2s+--c+o-m-p-l+e-m-e-n+t--s-u+m--o-f+the 8-bit ASCII values of
+       characters, beginning with the first tag character and ending with  the
+       checksum tag character (8).  The _n_n_n_n is 16-bit big-endian hexadecimal.
+
+   AAddddrreessss
+                                 +--+---+---+---+---+
+                                 |9 | _n | _n | _n | _n |
+       Addresses  may  be given f+o-r-+a-n-y-+d-a-t-a+-b-y-t+e-,--b+ut none is mandatory.  The
+       file begins at 0000 if no address is given before the first data field.
+       The _n_n_n_n is 16-bit big-endian hexadecimal.
+
+   DDaattaa WWoorrdd
+                                 +--+---+---+---+---+
+                                 |B | _a | _a | _b | _b |
+       Two  bytes  of data.  The +_a-_a-+a-n-d-+_b-_b--a+r-e--e+a-c-h-+8-bit big-endian hexadeci-
+       mal.
+
+   EEnndd ooff RReeccoorrdd
+                                     +--+------+
+                                     |F | CRLF |
+       The end of line sequence (LF o+n--U+n-i-x--s-y-s+tems, CRLF on PCs)  is  escaped
+       using this tag.  The checksum is reset to zero at this point.
+
+   PPrrooggrraamm IIddeennttiiffiieerr
+                             +--+---+---+---+---+------+
+                             |K | _n | _n | _n | _n | _t_e_x_t |
+       The  program identifie+r--c+a-n--c+o-n-t-a+i-n--a+-b-r-i+e-f--d-e-s-c+ription of the program,
+       or can be empty (_i_._e_. the text portion is optional).  The  _n_n_n_n  length
+       (hex)  of the field includes the `K', the length and the text; it is at
+       least 5.
+
+   SSiizzee MMuullttiipplliieerr
+       In general, binary data will expand in sized by approximately 2.9 times
+       when represented with this format.
+
+EEXXAAMMPPLLEE
+       Here  is  an  example  TI-Tagged  file.   It  contains the data "Hello,
+       World[rq] to be loaded at address 0x0100.
+              K000590080B4865B6C6CB6F2CB2057B6F72B6C64*0A7F641F
+              :
+       Here is another example from the reference below
+              00028        7FDCFF
+              90000BFFFFBFFFFBFFFFBFFFFBFFFFBFFFFBFFFFBFFFF7F400F
+              90008BFFFFBFFFFBFFFFBFFFFBFFFFBFFFFBFFFFBFFFF7F3F8F
+              90010BFFFFBFFFFBFFFFBFFFFBFFFFBFFFFBFFFFBFFFF7F3FFF
+              90018BFFFFBFFFFBFFFFBFFFFBFFFFBFFFFBFFFFBFFFF7F3F7F
+              90020BFFFFBFFFFBFFFFBFFFFBFFFFBFFFFBFFFFBFFFF7F3FEF
+              :
+
+SSEEEE AALLSSOO
+       http://www.dataio.com/pdf/Manuals/Unifamily/981-0014-016.pdf (page 6-7)
+
+CCOOPPYYRRIIGGHHTT
+       _s_r_e_c___c_a_t version 1.64
+       Copyright (C) 1998, 1999, 2000, 2001, 2002,  2003,  2004,  2005,  2006,
+       2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 Peter Miller
+
+       The _s_r_e_c___c_a_t program comes with ABSOLUTELY NO WARRANTY; for details use
+       the '_s_r_e_c___c_a_t _-_V_E_R_S_i_o_n _L_i_c_e_n_s_e' command.  This is free software and you
+       are  welcome  to  redistribute it under certain conditions; for details
+       use the '_s_r_e_c___c_a_t _-_V_E_R_S_i_o_n _L_i_c_e_n_s_e' command.
+
+MMAAIINNTTAAIINNEERR
+       Scott Finneran   E-Mail:   scottfinneran@yahoo.com.au
+       Peter Miller     E-Mail:   pmiller@opensource.org.au
+
+
+
+Reference Manual                    SRecord               srec_ti_tagged_16(5)

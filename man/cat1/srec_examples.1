@@ -1,0 +1,990 @@
+srec_examples(1)                       i                      srec_examples(1)
+
+
+
+NNAAMMEE
+       srec_examples - examples of how to use SRecord
+
+DDEESSCCRRIIPPTTIIOONN
+       The  _s_r_e_c___c_a_t  command  is very powerful, due to the ability to combine
+       the the input filters in  almost  unlimited  ways.   This  manual  page
+       describes a few of them.
+
+       This  manual  page  describes how to use the various input files, input
+       filters and input generators.  But these are only  examples,  for  more
+       complete details, see the _s_r_e_c___i_n_p_u_t(1) manual page.
+
+   TThhee CCoommmmaannddss LLiinneess AArree TToooo LLoonngg
+       If  you are marooned on an operating system with absurdly short command
+       line length limits, some of the commands which follow may be too  long.
+       You  can  get  around  this  handicap by placing your command line in a
+       file, say _f_r_e_d_._t_x_t, and then tell _s_r_e_c___c_a_t(1) to read this file for the
+       rest of its command line, like this
+
+              srec_cat @fred.txt
+
+       This also has the advantage of allowing comments, allowing you to write
+       your command line options over several lines,  and  even  indenting  to
+       make the command more clear.  Comments start at a "##" and extend to the
+       end of the line.  Blank lines are ignored.
+
+       Of course, you could always upgrade to Linux, which  has  been  sucking
+       less for over 27 years now.
+
+   YYoouurr EExxaammpplleess WWaanntteedd
+       If  you  have a clever way of using SRecord, or have solved a difficult
+       problem with SRecord, you could contribute to this manual page,  making
+       it  more  useful  for  everyone.   Send your example in an email to the
+       email address at the end of this manual page.
+
+CCOONNVVEERRTTIINNGG FFIILLEE FFOORRMMAATTSS
+       The simplest of the things _s_r_e_c___c_a_t(1) can do is convert from one EPROM
+       file format to another.  Please keep in mind, as you read this section,
+       that you can do many of these things  simultaneously  in  one  command.
+       They are only broken out separately to make them easier to understand.
+
+   IInntteell ttoo MMoottoorroollaa
+       One  of the simplest examples is converting files from Intel hex format
+       to Motorola S-Record format:
+
+              srec_cat _i_n_t_e_l_-_f_i_l_e -intel -o _s_r_e_c_-_f_i_l_e
+
+       Note that the format specifier immediately follows the name of the file
+       it  is  describing.  Pick any two formats that SRecord understands, and
+       it can convert between all of them.  (Except the  assembler,  BASIC,  C
+       and FPGA outputs which are write only.)
+
+   MMoottoorroollaa ttoo IInntteell
+       Converting the other way is just as simple:
+
+              srec_cat _s_r_e_c_-_f_i_l_e -o _i_n_t_e_l_-_f_i_l_e -intel
+
+       The  default format is Motorola S-Record format, so it does not need to
+       be specified after the file name.
+
+   DDiiffffeerreenntt SShhaappeess ooff tthhee SSaammee FFoorrmmaatt
+       It is regrettably common that some addle-pated EPROM  programmers  only
+       implement  a  portion  of the specification used to represent their hex
+       files.  For example, some compilers produce "s19" Motorola  data  (that
+       is, S1 data records with S9 start records, 16 bit address fields) which
+       would be OK except that some  blockhead  EPROM  programmers  insist  on
+       "s37" Motorola data (that is, S3 data records with S7 start records, 32
+       bit address fields).
+
+       It is possible to convert from one Motorola shape to another using  the
+       --AAddddrreessss--LLeennggtthh option:
+
+              srec_cat short.srec -o long.srec -address-length=4
+
+       This command says to use four byte (32-bit) addresses on output.
+
+       This  section  also  applies to Intel hex files, as they, too, have the
+       ability to select from a variety of address widths.   To  convert  from
+       one Intel shape to another using the same --AAddddrreessss--LLeennggtthh option:
+
+              srec_cat i32.hex -o i16.hex -address-length=3
+
+       This command says to use "i16hex" 20-bit segmented addresses on output.
+       An address length of 4 is the default ("i32hex" 32-bit linear  address-
+       ing),  and an address length of 2 would request "i8hex" 16-bit address-
+       ing.
+
+   LLiinnee LLeennggtthhss
+       From time to time you will come across a feeble-minded EPROM programmer
+       that  can't cope with long text lines, they assume that there will only
+       ever be 46 characters per line and barf when they see the default  line
+       lengths  that  _s_r_e_c___c_a_t(1)  writes  (or worse, get a stack scribble and
+       crash).
+
+       The Motorola S-record format definition permits up to 255 bytes of pay-
+       load, or lines of _5_1_4 characters, plus the line termination.  All EPROM
+       programmers _s_h_o_u_l_d have sufficiently large line buffers  to  cope  with
+       records this big.  Few do.
+
+       The  -line-length option may be used to specify the maximum line length
+       (not including the newline) to be used on output.  For example, 16 byte
+       payloads for Motorola hex
+
+              srec_cat long.srec -o short.s19 -line-length=46
+
+       The  line  length  option  interacts with the address length option, so
+       some tinkering to optimize for your particular situation many be neces-
+       sary.
+
+   OOuuttppuutt BBlloocckk SSiizzee
+       Every  once  in a while you will come across an ancient daft EPROM pro-
+       grammer that can't cope with long data records, they assume that  there
+       will  only  ever  be at most 16 bytes of data per record, and barf when
+       they see the default 32  byte  payloads  that  _s_r_e_c___c_a_t(1)  writes  (or
+       worse,  the  buffer over-run causes a tall grass walk that scribbles on
+       your EPROM).
+
+       The Intel hex format definition permits up to 255 bytes of payload data
+       per  record.  All EPROM programmers _s_h_o_u_l_d have sufficiently large data
+       buffers to cope with records this big.  Good luck with that.
+
+       The -Output-Block-Size option may be used to specify  the  record  data
+       size  to  be  used on output.  For example, Intel hex with 16 byte pay-
+       loads:
+
+              srec_cat long.srec -o short.hex -intel -obs=16
+
+       Be careful not to put the --oobbss option between the output file name  and
+       the format specifier.
+
+   JJuusstt tthhee DDaattaa,, PPlleeaassee
+       There are some bonehead EPROM programmers which can only cope with data
+       records, and are unable to cope with header records or execution  start
+       address  records.   If you have this problem, the --ddaattaa--oonnllyy option can
+       be used to suppress just about everything except the data.  The  actual
+       effect  depends on the format, of course, because some don't have these
+       features anyway.
+
+       The --ddaattaa--oonnllyy option is short hand.  There are four  properties  which
+       may  be --ddiissaabblleedd or --eennaabblleedd separately.  See the _s_r_e_c___c_a_t(1) man page
+       for a description of the --ddiissaabblleedd and --eennaabblleedd options.
+
+       For example, your neanderthal EPROM programmer  requires  Motorola  hex
+       with  header  records  (S0),  but without data count (S5) records.  Not
+       using the --ddaattaa--oonnllyy option has it barf on the data count  record,  but
+       using  the  --ddaattaa--oonnllyy option has it barf on the missing header record.
+       Using the --ddiissaabbllee==ddaattaa--ccoouunntt option  would  leave  the  header  record
+       intact while suppressing the data count record.
+
+   DDaattaa HHeeaaddeerrss
+       The  _s_r_e_c___c_a_t(1)  command  always  tries to pass through header records
+       unchanged, whenever they are present.   It  even  tries  preserve  them
+       across  file  format changes, to the limit the file formats are capable
+       of.
+
+       If there is no file header record and you would like to add one, or you
+       wish to override an existing file header record, use the --hheeaaddeerr=_s_t_r_i_n_g
+       option.  You will need to quote the string (to  insulate  it  from  the
+       shell) if it contains spaces or shell meta-characters.
+
+   EExxeeccuuttiioonn SSttaarrtt AAddddrreesssseess
+       The  _s_r_e_c___c_a_t(1)  command  always tries to pass through execution start
+       addresses (typically occurring at the end of the file),  whenever  they
+       are  present.   They  are  adjusted  along with the data records by the
+       --ooffffsseett filter.   It  even  tries  preserve  them  across  file  format
+       changes, to the limit the file formats are capable of.
+
+       If there is no execution start address record and you would like to add
+       one, or you wish  to  override  an  existing  execution  start  address
+       record, use the --eexxeeccuuttiioonn--ssttaarrtt--aaddddrreessss=_n_u_m_b_e_r option.
+
+       Please  note:  the  execution start address is a different concept than
+       the first address in memory of your data.  Think  of  it  as  a  "goto"
+       address  to  be jumped to by the monitor when the hex load is complete.
+       If you want to change where your data starts in memory, use the --ooffffsseett
+       filter.
+
+   FFiixxiinngg CChheecckkssuummss
+       Some embedded firmware developers are saddled with featherbrained tools
+       which produce incorrect checksums, which the more  vigilant  models  of
+       EPROM programmer will not accept.
+
+       To  fix the checksums on a file, use the --iiggnnoorree--cchheecckkssuummss option.  For
+       example:
+
+              srec_cat broken.srec -ignore-checksums -o fixed.srec
+
+       The checksums in _b_r_o_k_e_n_._s_r_e_c are parsed (it is still and error if  they
+       are  absent)  but  are  not checked.  The resulting _f_i_x_e_d_._s_r_e_c file has
+       correct checksums.  The --iiggnnoorree--cchheecckkssuummss option only applies to input.
+
+       This option may be used on any file format which has checksums, includ-
+       ing Intel hex.
+
+   DDiissccoovveerriinngg MMyysstteerryy FFoorrmmaattss
+       See  the  WWhhaatt  FFoorrmmaatt IIss TThhiiss?? section, below, for how to discover and
+       convert mystery EPROM load file formats.
+
+BBIINNAARRYY FFIILLEESS
+       It is possible to convert to and from binary files.  You can  even  mix
+       binary  files  and  other formats together in the same _s_r_e_c___c_a_t(1) com-
+       mand.
+
+   WWrriittiinngg BBiinnaarryy FFiilleess
+       The simplest way of reading a hex file and converting it  to  a  binary
+       file looks like this:
+
+              srec_cat fred.hex -o fred.bin -binary
+
+       This  reads  the  Motorola  hex file _f_r_e_d_._s_r_e_c and writes it out to the
+       _f_r_e_d_._b_i_n as raw binary.
+
+       Note that the data is placed into the binary file at  the  byte  offset
+       specified  by the addresses in the hex file.  If there are holes in the
+       data they are filled with zero.  This is, of course, common with linker
+       output  where the code is placed starting at a particular place in mem-
+       ory.  For example, when you have an image that starts at 0x100000,  the
+       first 1MB of the output binary file will be zero.
+
+       You can automatically cancel this offset using a command like
+
+              srec_cat fred.hex -offset - -minimum-addr fred.hex -o fred.bin
+
+       The above command works by offsetting the _f_r_e_d_._h_e_x file lower in memory
+       by the least address in the _f_r_e_d_._h_e_x file's data.
+
+       See also the _s_r_e_c___b_i_n_a_r_y(5) man page for additional detail.
+
+   RReeaaddiinngg BBiinnaarryy FFiilleess
+       The simplest way of reading a binary file and converting it looks  like
+       this
+
+              srec_cat fred.bin -binary -o fred.srec
+
+       This reads the binary file _f_r_e_d_._b_i_n and writes all of its data back out
+       again as a Motorola S-Record file.
+
+       Often, this binary isn't exactly where  you  want  it  in  the  address
+       space, because it is assumed to reside at address zero.  If you need to
+       move it around use the --ooffffsseett filter.
+
+              srec_cat fred.bin -binary -offset 0x10000 -o fred.srec
+
+       You also need to avoid file "holes" which are filled  with  zero.   You
+       can  use  the  --ccrroopp filter, of you could use the --uunnffiillll filter if you
+       don't know exactly where the data is.
+
+              srec_cat fred.bin -binary -unfill 0x00 512 -o fred.srec
+
+       The above command removes runs of zero bytes that are 512 bytes long or
+       longer.  If your file contains 1GB of leading zero bytes, this is going
+       to be slow, it may be better to use the _d_d(1) command to slice and dice
+       first.
+
+JJOOIINNIINNGG FFIILLEESS TTOOGGEETTHHEERR
+       The _s_r_e_c___c_a_t command takes its name from the UNIX _c_a_t(1) command, which
+       is short for "catenate" or "to join".  The _s_r_e_c___c_a_t command joins EPROM
+       load files together.
+
+   AAllll IInn OOnnee
+       Joining  EPROM  load  files together into a single file is simple, just
+       name as many files on the command line as you need:
+
+              srec_cat _i_n_f_i_l_e_1 _i_n_f_i_l_e_2 -o _o_u_t_f_i_l_e
+
+       This example is all Motorola S-Record files, because that's the default
+       format.   You  can  have  multiple  formats  in  the  one  command, and
+       _s_r_e_c___c_a_t(1) will still work.  You don't even have to  output  the  same
+       format:
+
+              srec_cat _i_n_f_i_l_e_1 -spectrum _i_n_f_i_l_e_2 -needham \
+                  -o _o_u_t_f_i_l_e -signetics
+
+       These are all ancient formats, however it isn't uncommon to have to mix
+       and match Intel and Motorola formats in the one project.
+
+   OOvveerrllaayyiinngg ttwwoo ddaattaa ffiilleess
+       It is common to want to "join" two  hex  files  together,  without  any
+       changes  of address. on the assumption neither file intersects with the
+       other.  This is a simple "layers", it is quite common  for  linkers  to
+       output  the  main  code,  and then a whole bunch of relocation and jump
+       destination, by writing a two layered files.
+              srec_cat one.he two.hex -o three.hex
+       Almost always you see an error
+              srec_cat: two.srec: 49282: contradictory 0x00000000 value  (pre-
+              vious = 0x00, this one = 0x80)
+
+       This  means that the files actually intersect, they try to set the same
+       location.  You can turn the error into a warning, using the --ccoonnttrraaddiicc--
+       ttoorryy--bbyytteess==wwaarrnniinngg  command line option.  But this will probably gener-
+       ate a bazillion warnings.
+
+       The necessary step is to crop the first file, to avoid the regions  the
+       second file is going o be overwriting.
+              srec_cat                               \
+                  one.srec -exclude -within two.srec \
+                  two.srec -exclude -within one.srec \
+                  -o three.hex
+
+       Depending  on  your  linker  this  will have no errors (but if it wants
+       another layer, more jiggery-pokery is required).
+
+   FFiilltteerriinngg AAfftteerr JJooiinniinngg
+       There are times when you want to join two sets of  data  together,  and
+       then apply a filter to the joined result.  To do this you use parenthe-
+       ses.
+              srec_cat                                                  \
+                  '('                                                   \
+                      _i_n_f_i_l_e -exclude 0xFFF0 0x10000                      \
+                      -generate 0xFFF0 0xFFF8 -repeat-string 'Bananas ' \
+                  ')'                                                   \
+                  -length-b-e 0xFFF8 4                                  \
+                  -checksum-neg-b-e 0xFFFC 4 4                          \
+                  -o _o_u_t_f_i_l_e
+
+       The above example command catenate an input file  (with  the  generated
+       data  area  excluded)  with a constant string.  This catenated input is
+       then filtered to add a 4-byte length, and a 4-byte checksum.
+
+   JJooiinniinngg EEnndd--ttoo--EEnndd
+       All too often the address ranges in the EPROM load files will  overlap.
+       You  will  get  an  error if they do.  If both files start from address
+       zero, because each goes into a separate EPROM, you may need to use  the
+       offset filter:
+
+              srec_cat _i_n_f_i_l_e_1 \
+                  _i_n_f_i_l_e_2 -offset 0x80000 \
+                  -o _o_u_t_f_i_l_e
+
+       Sometimes  you want the two files to follow each other exactly, but you
+       don't know the offset in advance:
+
+              srec_cat _i_n_f_i_l_e_1 \
+                  _i_n_f_i_l_e_2 -offset -maximum-addr _i_n_f_i_l_e_1 \
+                  -o _o_u_t_f_i_l_e
+
+       Notice that where the was a number (0x80000) before,  there  is  now  a
+       calculation  (-maximum-addr  _i_n_f_i_l_e_1).   This is possible most places a
+       number may be used (also -minimum-addr and -range).
+
+CCRROOPPPPIINNGG TTHHEE DDAATTAA
+       It is possible to copy an EPROM load file, selecting addresses to  keep
+       and addresses to discard.
+
+   WWhhaatt TToo KKeeeepp
+       A  common  activity  is to crop your data to match your EPROM location.
+       Your linker may add other junk that you are not interested in, _e_._g_.  at
+       the  RAM  location.   In  this example, there is a 1MB EPROM at the 2MB
+       boundary:
+
+              srec_cat _i_n_f_i_l_e -crop 0x200000 0x300000 \
+                  -o _o_u_t_f_i_l_e
+
+       The lower bound for all address ranges is inclusive, the upper bound is
+       exclusive.  If you subtract them, you get the number of bytes.
+
+   AAddddrreessss OOffffsseett
+       Just possibly, you have a moronic EPROM programmer, and it barfs if the
+       EPROM image doesn't start at zero.  To find  out  just  where  is  _d_o_e_s
+       start in memory, use the _s_r_e_c___i_n_f_o(1) command:
+
+              $ ssrreecc__iinnffoo eexxaammppllee..ssrreecc
+              Format: Motorola S-Record
+              Header: extra-whizz tool chain linker
+              Execution Start Address: 0x00200000
+              Data:   0x200000 - 0x32AAEF
+              $
+
+       Rather than butcher the linker command file, just offset the addresses:
+
+              srec_cat _i_n_f_i_l_e -crop 0x200000 0x300000 -offset -0x200000 \
+                  -o _o_u_t_f_i_l_e
+
+       Note  that the offset given is _n_e_g_a_t_i_v_e, it has the effect of subtract-
+       ing that value from all addresses in the input  records,  to  form  the
+       output  record  addresses.   In  this  case, shifting the image back to
+       zero.
+
+       This example also demonstrates how the input  filters  may  be  chained
+       together: first the crop and then the offset, all in one command, with-
+       out the need for temporary files.
+
+       If all you want to do is offset the data to start  from  address  zero,
+       this can be automated, so you don't have to know the minimum address in
+       advance, by using _s_r_e_c___c_a_t's ability to calculate some  things  on  the
+       command line:
+
+              srec_cat _i_n_f_i_l_e -offset - -minimum-addr _i_n_f_i_l_e \
+                  -o _o_u_t_f_i_l_e
+
+       Note the spaces either side of the minus sign, they are mandatory.
+
+   WWhhaatt TToo TThhrrooww AAwwaayy
+       There are times when you need to exclude an small address range from an
+       EPROM load file, rather than wanting to keep  a  small  address  range.
+       The --eexxcclluuddee filter may be used for this purpose.
+
+       For  example, if you wish to exclude the address range where the serial
+       number of an embedded device is kept, say  0x20  bytes  at  0x100,  you
+       would use a command like this:
+
+              srec_cat input.srec -exclude 0x100 0x120 -o output.srec
+
+       The  _o_u_t_p_u_t_._s_r_e_c  file  will  have  a hole in the data at the necessary
+       locations.
+
+       Note that you can have both --ccrroopp and  --eexxcclluuddee  on  the  same  command
+       line, whichever works more naturally for your situation.
+
+   DDiissccoonnttiinnuuoouuss AAddddrreessss RRaannggeess
+       Address  ranges  don't  have  to be a single range, you can build up an
+       address range using more than a single pair.
+
+              srec_cat _i_n_f_i_l_e -crop 0x100 0x200 0x1000 0x1200 \
+                  -o _o_u_t_f_i_l_e
+
+       This  filter  results  in  data  from  0x100..0x1FF   and   data   from
+       0x1000..0x1200  to  pass through, the rest is dropped.  This is is more
+       efficient than chaining a --ccrroopp and an --eexxcclluuddee filter together.
+
+MMOOVVIINNGG TTHHIINNGGSS AARROOUUNNDD
+       It is also possible to change the address of data  records,  both  for-
+       wards  and backwards.  It is also possible rearrange where data records
+       are placed in memory.
+
+   OOffffsseett FFiilltteerr
+       The --ooffffsseett==_n_u_m_b_e_r filter operates on the addresses of records.  If the
+       number is positive the addresses move that many bytes higher in memory,
+       negative values move lower.
+
+              srec_cat _i_n_f_i_l_e -crop 0x200000 0x300000 -offset -0x200000 \
+                  -o _o_u_t_f_i_l_e
+
+       The above example moves the 1MB block of data at 0x200000 down to  zero
+       (the offset is _n_e_g_a_t_i_v_e) and discards the rest of the data.
+
+   BByyttee SSwwaappppiinngg
+       There are times when the bytes in the data need to be swapped, convert-
+       ing between big-endian and little-endian data usually.
+
+              srec_cat _i_n_f_i_l_e -byte-swap 4 -o _o_u_t_f_i_l_e
+
+       This reverses bytes in 32 bit values (4 bytes).  The  default,  if  you
+       don't  supply  a width, is to reverse bytes in 16 bit values (2 bytes).
+       You can actually use any weird value you like, it doesn't even have  to
+       be a power of 2.  Perhaps 64 bits (8 bytes) may be useful one day.
+
+   BBiinnaarryy OOuuttppuutt
+       You need to watch out for binary files on output, because the holes are
+       filled with zeros.  Your 100kB program at the top of  32-bit  addressed
+       memory will make a 4GB file.  See _s_r_e_c___b_i_n_a_r_y(5) for how understand and
+       avoid this problem, usually with the --ooffffsseett filter.
+
+   SSpplliittttiinngg aann IImmaaggee
+       If you have a 16-bit data bus, but you are using two  8-bit  EPROMs  to
+       hold  your  firmware, you can generate the even and odd images by using
+       the --SSPPlliitt filter.  Assuming your firmware is in the _f_i_r_m_w_a_r_e_._h_e_x file,
+       use the following:
+
+              srec_cat firmware.hex -split 2 0 -o firmware.even.hex
+              srec_cat firmware.hex -split 2 1 -o firmware.odd.hex
+
+       This will result in the two necessary EPROM images.  Note that the out-
+       put addresses are divided by the  split  multiple,  so  if  your  EPROM
+       images  are at a particular offset (say 0x10000, in the following exam-
+       ple), you need to remove the offset, and then replace it...
+
+              srec_cat firmware.hex \
+                  -offset -0x10000 -split 2 0 \
+                  -offset 0x10000 -o firmware.even.hex
+              srec_cat firmware.hex \
+                  -offset -0x10000 -split 2 1 \
+                  -offset 0x10000 -o firmware.odd.hex
+
+       Note how the ability to apply multiple filters  simplifies  what  would
+       otherwise be a much longer script.
+
+   SSttrriippiinngg
+       A second use for the --SSPPlliitt filter is memory striping.
+
+       You  don't  have  to  split  into byte-wide parts, you can choose other
+       sizes.  It is common to want to convert 32-bit wide data into  two  set
+       of 16-bit wide data.
+
+              srec_cat firmware.hex -split 4 0 2 -o firmware.01.hex
+              srec_cat firmware.hex -split 4 2 2 -o firmware.23.hex
+
+       This  is  relatively  simple  to understand, but you can use even wider
+       stripes.
+
+       In this next example, the hardware requires that 512-byte blocks alter-
+       nate  between  4 EPROMs.  Generating the 4 images would be done as fol-
+       lows:
+
+              srec_cat firmware.hex -split 0x800 0x000 0x200 -o firmware.0.hex
+              srec_cat firmware.hex -split 0x800 0x200 0x200 -o firmware.1.hex
+              srec_cat firmware.hex -split 0x800 0x400 0x200 -o firmware.2.hex
+              srec_cat firmware.hex -split 0x800 0x600 0x200 -o firmware.3.hex
+
+   AAssyymmmmeettrriicc SSttrriippiinngg
+       A more peculiar example of striping is the Microchip dsPIC33F microcon-
+       troller,  that  has a weird memory storage pattern and they are able to
+       store 3 bytes in an address that should  only  contain  2  bytes.   The
+       result is a hex file that has zero-filled the top byte (little-endian),
+       and all addresses are doubled from what they are in the chip.  Here  is
+       an example:
+
+              S1130000000102000405060008090A000C0D0E0098
+              S1130010101112001415160018191A001C1D1E00C8
+              S1130020202122002425260028292A002C2D2E00F8
+              S1130030303132003435360038393A003C3D3E0028
+
+       To  get  rid  of the 00 padding bytes, leaving only the 3/4 significant
+       bytes, you also use the split filter, with its additional  _w_i_d_t_h  argu-
+       ment, like this:
+
+              srec_cat example.srec -split 4 0 3 -o no_dross.srec
+
+       This  results  in  a  file with the 00 padding bytes removed.  It looks
+       like this:
+
+              S113000000010204050608090A0C0D0E1011121451
+              S1130010151618191A1C1D1E2021222425262829EC
+              S11300202A2C2D2E30313234353638393A3C3D3E87
+
+       Notice how the addresses are 3/4 the size, as well.   You  can  reverse
+       this using the --uunnsspplliitt and --ffiillll==00 filters.
+
+   UUnnsspplliitt IINNGG IImmaaggeess
+       The unsplit filter may be used to reverse the effects of the split fil-
+       ter.  Note that the address range is expanded leaving holes between the
+       stripes.   By using all the stripes, the complete input is reassembled,
+       without any holes.
+
+              srec_cat -o firmware.hex \
+                  firmware.even.hex -unsplit 2 0 \
+                  firmware.odd.hex  -unsplit 2 1
+
+       The above example reverses the previous 16-bit data  bus  example.   In
+       general, you unsplit with the same parameters that you split with.
+
+FFIILLLLIINNGG TTHHEE BBLLAANNKKSS
+       Often EPROM load files will have "holes" in them, places where the com-
+       piler and linker did not put anything.  For some purposes this  is  OK,
+       and for other purposes something has to be done about the holes.
+
+   TThhee FFiillll FFiilltteerr
+       It  is  possible  to fill the blanks where your data does not lie.  The
+       simplest example of this fills the entire EPROM:
+
+              srec_cat _i_n_f_i_l_e -fill 0x00 0x200000 0x300000 -o _o_u_t_f_i_l_e
+
+       This example fills the holes, if any, with zeros.  You must  specify  a
+       range  - with a 32-bit address space, filling everything generates _h_u_g_e
+       load files.
+
+       If you only want to fill the gaps in your data, and don't want to  fill
+       the entire EPROM, try:
+
+              srec_cat _i_n_f_i_l_e -fill 0x00 -over _i_n_f_i_l_e -o _o_u_t_f_i_l_e
+
+       This  example  demonstrates the fact that wherever an address range may
+       be specified, the --oovveerr and --wwiitthhiinn options may be used.
+
+   UUnnffiilllliinngg tthhee BBllaannkkss
+       It is common to need to "unfill" an EPROM image after you read  it  out
+       of  a  chip.   Usually, it will have had all the holes filled with 0xFF
+       (areas of the EPROM you don't program show as 0xFF when you  read  them
+       back).
+
+       To get rid of all the 0xFF bytes in the data, use this filter:
+
+              srec_cat _i_n_f_i_l_e -unfill 0xFF -o _o_u_t_f_i_l_e
+
+       This  will  get rid of _a_l_l the 0xFF bytes, including the ones you actu-
+       ally wanted in there.  There are two ways to deal  with  this.   First,
+       you can specify a minimum run length to the un-fill:
+
+              srec_cat _i_n_f_i_l_e -unfill 0xFF 5 -o _o_u_t_f_i_l_e
+
+       This  says  that  runs  of 1 to 4 bytes of 0xFF are OK, and that a hole
+       should only be created for runs of 5 or more 0xFF bytes in a row.   The
+       second method is to re-fill over the intermediate gaps:
+
+              srec_cat _o_u_t_f_i_l_e -fill 0xFF -over _o_u_t_f_i_l_e \
+                  -o _o_u_t_f_i_l_e_2
+
+       Which  method  you  choose  depends on your needs, and the shape of the
+       data in your EPROM.  You may need to combine both techniques.
+
+   AAddddrreessss RRaannggee PPaaddddiinngg
+       Some data formats are 16 bits wide, and automatically  fill  with  0xFF
+       bytes  if it is necessary to fill out the other half of a word which is
+       not in the data.  If you need to fill with a different value,  you  can
+       use a command like this:
+
+              srec_cat _i_n_f_i_l_e -fill 0x0A \
+                  -within _i_n_f_i_l_e -range-padding 2 \
+                  -o _o_u_t_f_i_l_e
+
+       This  gives the fill filter an address range calculated from details of
+       the input file.  The address range is all the address ranges covered by
+       data  in  the _i_n_f_i_l_e, extended downwards (if necessary) at the start of
+       each sub-range to a 2 byte multiple and extended upwards (if necessary)
+       at the end of each sub-range to a 2 byte multiple.  This also works for
+       larger multiples, like  1kB  page  boundaries  of  flash  chips.   This
+       address range padding works anywhere an address range is required.
+
+   FFiillll wwiitthh CCooppyyrriigghhtt
+       It  is  possible to fill unused portions of your EPROM with a repeating
+       copyright message.  Anyone trying to reverse engineer  your  EPROMs  is
+       going to see the copyright notice in their hex editor.
+
+       This  is accomplished with two input sources, one from a data file, and
+       one which is generated on-the-fly.
+
+              srec_cat _i_n_f_i_l_e \
+                  -generate '(' 0 0x100000 -minus -within _i_n_f_i_l_e ')' \
+                      -repeat-string 'Copyright (C) 1812 Tchaikovsky.  ' \
+                  -o _o_u_t_f_i_l_e
+
+       Notice the address range for the data generation: it takes the  address
+       range  of  your  EPROM, in this case 1MB starting from 0, and subtracts
+       from it the address ranges used by the input file.
+
+       If you want to script this with the current year (because 1812 is a bit
+       out of date) use the shell's output substitution (back ticks) ability:
+
+              srec_cat _i_n_f_i_l_e \
+                  -generate '(' 0 0x100000 -minus -within _i_n_f_i_l_e ')' \
+                      -repeat-string "Copyright (C) `date +%Y` Tchaikovsky.  " \
+                  -o _o_u_t_f_i_l_e
+
+       The  string  specified  is  repeated  over and over again, until it has
+       filled all the holes.
+
+   OObbffuussccaattiinngg wwiitthh NNooiissee
+       Sometimes you want to fill your EPROM images  with  noise,  to  conceal
+       where  the  real data stops and starts.  You can do this with the --rraann--
+       ddoomm--ffiillll filter.
+
+              srec_cat _i_n_f_i_l_e -random-fill 0x200000 0x300000 \
+                  -o _o_u_t_f_i_l_e
+
+       It works just like the --ffiillll filter, but uses random numbers instead of
+       a constant byte value.
+
+   FFiillll WWiitthh 1166--bbiitt WWoorrddss
+       When filling the image with a constant byte value doesn't work, and you
+       need a constant 16-bit word value instead, use the --rreeppeeaatt--ddaattaa genera-
+       tor,  which  takes  an arbitrarily long sequence of bytes to use as the
+       fill pattern:
+
+              srec_cat _i_n_f_i_l_e \
+                  -generator '(' 0x200000 0x300000 -minus -within _i_n_f_i_l_e ')' \
+                      -repeat-data 0x1B 0x08 \
+                  -o _o_u_t_f_i_l_e
+
+       Notice how the generator's address range once again avoids the  address
+       ranges  occupied by the _i_n_f_i_l_e's data.  You have to get the endian-ness
+       right yourself.
+
+IINNSSEERRTTIINNGG CCOONNSSTTAANNTT DDAATTAA
+       From time to time you will want to insert constant data,  or  data  not
+       produced by your compiler or assembler, into your EPROM load images.
+
+   BBiinnaarryy MMeeaannss LLiitteerraall
+       One simple way is to have the desired information in a file.  To insert
+       the file's contents literally, with no format interpretation,  use  the
+       _b_i_n_a_r_y input format:
+
+              srec_cat _i_n_f_i_l_e -binary -o _o_u_t_f_i_l_e
+
+       It  will probably be necessary to use an _o_f_f_s_e_t filter to move the data
+       to where you actually want it within the image:
+
+              srec_cat _i_n_f_i_l_e -binary -offset 0x1234 -o _o_u_t_f_i_l_e
+
+       It is also possible to use the standard input as a data  source,  which
+       lends  itself  to  being  scripted.  For example, to insert the current
+       date and time into an EPROM load file, you could use a pipe:
+
+              date | srec_cat - -bin -offset 0xFFE3 -o _o_u_t_f_i_l_e
+
+       The special file name "-" means to read from the standard  input.   The
+       output of the _d_a_t_e command is always 29 characters long, and the offset
+       shown will place it at the top of a 64KB EPROM image.
+
+   RReeppeeaattiinngg OOnnccee
+       The FFiillll wwiitthh CCooppyyrriigghhtt section, above, shows how to  repeat  a  string
+       over  and  over.   We  can  use a single repeat to insert a string just
+       once.
+
+              srec_cat -generate 0xFFE3 0x10000 -repeat-string "`date`" \
+                  -o _o_u_t_f_i_l_e
+
+       Notice how the address range for the data  generation  exactly  matches
+       the  length  of  the _d_a_t_e(1) output size.  You can, of course, add your
+       input file to the above _s_r_e_c___c_a_t(1)  command  to  catenate  your  EPROM
+       image together with the date and time.
+
+   IInnsseerrttiinngg AA LLoonngg
+       Another  possibility  is  to  add  the Subversion commit number to your
+       EPROM image.  In this example, we are inserting it a a  4-byte  little-
+       endian value at address 0x0008.  The Subversion commit number is in the
+       _$_v_e_r_s_i_o_n shell variable in this example:
+
+              srec_cat -generate 0x0008 0x000C -constant-l-e $version 4 \
+                  _i_n_f_i_l_e -exclude 0x0008 0x000C \
+                  -o _o_u_t_f_i_l_e
+
+       Note that we use a filter to ensure there is a hole in the input  where
+       the version number goes, just in case the linker put something there.
+
+DDAATTAA AABBOOUUTT TTHHEE DDAATTAA
+       It is possible to add a variety of data about the data to the output.
+
+   CChheecckkssuummss
+       The  --cchheecckkssuumm--nneeggaattiivvee--bbiigg--eennddiiaann  filter may be used to sum the data,
+       and then insert the negative of the sum into the data.   This  has  the
+       effect  of  summing  to zero when the checksum itself is summed across,
+       provided the sum width matches the inserted value width.
+
+              srec_cat _i_n_f_i_l_e \
+                      -crop 0 0xFFFFFC \
+                      -random-fill 0 0xFFFFFC \
+                      -checksum-neg-b-e 0xFFFFFC 4 4 \
+                  -o _o_u_t_f_i_l_e
+
+       In this example, we have an EPROM in the  lowest  megabyte  of  memory.
+       The -crop filter ensures we are only summing the data within the EPROM,
+       and not anywhere else.  The -random-fill filter fills any holes left in
+       the  data  with  random  values.  Finally, the -checksum-neg-b-e filter
+       inserts a 32 bit (4 byte) checksum in big-endian format in the  last  4
+       bytes  of the EPROM image.  Naturally, there is a little-endian version
+       of this filter as well.
+
+       Your embedded code can check the EPROM using C code similar to the fol-
+       lowing:
+
+              unsigned long *begin = (unsigned long *)0;
+              unsigned long *end = (unsigned long *)0x100000;
+              unsigned long sum = 0;
+              while (begin < end)
+                  sum += *begin++;
+              if (sum != 0)
+              {
+                  _O_o_p_s
+              }
+
+       The  --cchheecckkssuumm--bbiittnnoott--bbiigg--eennddiiaann filter is similar, except that summing
+       over the checksum should yield a value of all-one-bits (-1).  For exam-
+       ple, using shorts rather than longs:
+
+              srec_cat _i_n_f_i_l_e \
+                      -crop 0 0xFFFFFE \
+                      -fill 0xCC 0x00000 0xFFFFFE \
+                      -checksum-neg-b-e 0xFFFFFE 2 2 \
+                  -o _o_u_t_f_i_l_e
+
+       Assuming  you  chose the correct endian-ness filter, your embedded code
+       can check the EPROM using C code similar to the following:
+
+              unsigned short *begin = (unsigned short *)0;
+              unsigned short *end = (unsigned short *)0x100000;
+              unsigned short sum = 0;
+              while (begin < end)
+                  sum += *begin++;
+              if (sum != 0xFFFF)
+              {
+                  _O_o_p_s
+              }
+
+       There is also a --cchheecckkssuumm--ppoossiittiivvee--bb--ee filter, and a  matching  little-
+       endian filter, which inserts the simple sum, and which would be checked
+       in C using an equality test.
+
+              srec_cat _i_n_f_i_l_e \
+                      -crop 0 0xFFFFFF \
+                      -fill 0x00 0x00000 0xFFFFFF \
+                      -checksum-neg-b-e 0xFFFFFF 1 1 \
+                  -o _o_u_t_f_i_l_e
+
+       Assuming you chose the correct endian-ness filter, your  embedded  code
+       can check the EPROM using C code similar to the following:
+
+              unsigned char *begin = (unsigned char *)0;
+              unsigned char *end = (unsigned char *)0xFFFFF;
+              unsigned char sum = 0;
+              while (begin < end)
+                  sum += *begin++;
+              if (sum != *end)
+              {
+                  _O_o_p_s
+              }
+
+       In  the 8-bit case, it doesn't matter whether you use the big-endian or
+       little-endian filter.
+
+   QQuuiicckk HHeexx--DDuummpp
+       You can look at the checksum of your data, by using the "hex-dump" out-
+       put  format.   This  is useful for looking at calculated values, or for
+       debugging an _s_r_e_c___c_a_t(1) command before immortalizing it in a script.
+
+              srec_cat _i_n_f_i_l_e                        \
+                      -crop 0 0x10000             \
+                      -fill 0xFF 0x0000 0x10000   \
+                      -checksum-neg-b-e 0x10000 4 \
+                      -crop 0x10000 0x10004       \
+                  -o - -hex-dump
+
+       This command reads in the file,  checksums  the  data  and  places  the
+       checksum at 0x10000, crops the result to contain only the checksum, and
+       then prints the checksum on the standard output in a classical hexadec-
+       imal  dump  format.  The special file name "-" means "the standard out-
+       put" in this context.
+
+   CCyycclliicc RReedduunnddaannccyy CChheecckkss
+       The simple additive checksums have a number of theoretical limitations,
+       to  do  with  errors  they  can and can't detect.  The CRC methods have
+       fewer problems.
+
+              srec_cat _i_n_f_i_l_e                        \
+                      -crop 0 0xFFFFFC            \
+                      -fill 0x00 0x00000 0xFFFFFC \
+                      -crc32-b-e 0xFFFFFC         \
+                  -o _o_u_t_f_i_l_e
+
+       In the above example, we have an EPROM in the lowest megabyte  of  mem-
+       ory.   The --ccrroopp filter ensures we are only summing the data within the
+       EPROM, and not anywhere else.  The --ffiillll filter fills any holes left in
+       the  data.   Finally,  the --cchheecckkssuumm--nneegg--bb--ee filter inserts a 32 bit (4
+       byte) checksum in big-endian format in the last 4 bytes  of  the  EPROM
+       image.   Naturally,  there is a little-endian version of this filter as
+       well.
+
+       The checksum is calculated using  the  industry  standard  32-bit  CRC.
+       Because  SRecord is open source, you can always read the source code to
+       see how it works.  There are many non-GPL versions of this code  avail-
+       able  on  the  Internet,  and  suitable  for  embedding  in proprietary
+       firmware.
+
+       There is also a 16-bit CRC available.
+
+              srec_cat _i_n_f_i_l_e                        \
+                      -crop 0 0xFFFFFE            \
+                      -fill 0x00 0x00000 0xFFFFFE \
+                      -crc16-b-e 0xFFFFFE         \
+                  -o _o_u_t_f_i_l_e
+
+       The checksum is calculated using the CCITT formula.  Because SRecord is
+       open  source,  you can always read the source code to see how it works.
+       There are many non-GPL version of this code available on the  Internet,
+       and suitable for embedding in proprietary firmware.
+
+       You  can  look  at the CRC of your data, by using the "hex-dump" output
+       format.
+
+              srec_cat _i_n_f_i_l_e                      \
+                      -crop 0 0x10000           \
+                      -fill 0xFF 0x0000 0x10000 \
+                      -crc16-b-e 0x10000        \
+                      -crop 0x10000 0x10002     \
+                  -o - -hex-dump
+
+       This command reads in the file, calculates the  CRC  of  the  data  and
+       places  the  CRC  at 0x10000, crops the result to contain only the CRC,
+       and then prints the checksum on the  standard  output  in  a  classical
+       hexadecimal dump format.
+
+   WWhheerree IIss MMyy DDaattaa??
+       There  are  several properties of your EPROM image that you may wish to
+       insert into the data.
+
+              srec_cat _i_n_f_i_l_e -minimum-b-e 0xFFFE 2 -o _o_u_t_f_i_l_e
+
+       The above example inserts the minimum address of the data  (_l_o_w  _w_a_t_e_r)
+       into  the  data,  as  two  bytes in big-endian order at address 0xFFFE.
+       This includes the minimum itself.  If the data already  contains  bytes
+       at the given address, you need to use an exclude filter.  The number of
+       bytes defaults to 4.
+
+       There is also a --mmiinniimmuumm--ll--ee filter for inserting little-endian values,
+       and two more filters called --eexxcclluussiivvee--mmiinniimmuumm--bb--ee and --eexxcclluussiivvee--mmiinnii--
+       mmuumm--ll--ee that do not include the minimum itself in  the  calculation  of
+       the minimum data address.
+
+              srec_cat _i_n_f_i_l_e -maximum-b-e 0xFFFFFC 4 -o _o_u_t_f_i_l_e
+
+       The above example inserts the maximum address of the data (_h_i_g_h _w_a_t_e_r _+
+       _1, just like address ranges) into the data, as four bytes in big-endian
+       order  at  address 0xFFFFFC.  This includes the maximum itself.  If the
+       data already contains bytes at the given address, you need  to  use  an
+       --eexxcclluuddee filter.  The number of bytes defaults to 4.
+
+       There is also a --mmaaxxiimmuumm--ll--ee filter for inserting little-endian values,
+       and two more filters called --eexxcclluussiivvee--mmaaxxiimmuumm--bb--ee and --eexxcclluussiivvee--mmaaxxii--
+       mmuumm--ll--ee  that  do  not include the maximum itself in the calculation of
+       the maximum data address.
+
+              srec_cat _i_n_f_i_l_e -length-b-e 0xFFFFFC 4 -o _o_u_t_f_i_l_e
+
+       The above example inserts the length of the data (_h_i_g_h _w_a_t_e_r + 1 -  _l_o_w
+       _w_a_t_e_r)  into  the  data,  as  four bytes in big-endian order at address
+       0xFFFFFC.  This includes the length itself.  If the data  already  con-
+       tains bytes at the length location, you need to use an --eexxcclluuddee filter.
+       The number of bytes defaults to 4.
+
+       There is also  a  --lleennggtthh--ll--ee  filter  for  inserting  a  little-endian
+       length, and the --eexxcclluussiivvee--lleennggtthh--bb--ee and --eexxcclluussiivvee--lleennggtthh--ll--ee filters
+       that do not include the length itself in the calculation.
+
+   WWhhaatt FFoorrmmaatt IIss TThhiiss??
+       You can obtain a variety of information about an  EPROM  load  file  by
+       using the _s_r_e_c___i_n_f_o(1) command.  For example:
+
+              $ ssrreecc__iinnffoo eexxaammppllee..ssrreecc
+              Format: Motorola S-Record
+              Header: "http://srecord.sourceforge.net/"
+              Execution Start Address: 00000000
+              Data:   0000 - 0122
+                      0456 - 0FFF
+              $
+
+       This  example  shows that the file is a Motorola S-Record.  The text in
+       the file header is printed, along with  the  execution  start  address.
+       The  final  section shows the address ranges containing data (the upper
+       bound of each subrange is _i_nclusive, rather  than  the  _e_xclusive  form
+       used on the command line.
+
+              $ ssrreecc__iinnffoo ssoommee--wweeiirrdd--ffiillee..hheexx --gguueessss
+              Format: Signetics
+              Data:   0000 - 0122
+                      0456 - 0FFF
+              $
+
+       The  above example guesses the EPROM load file format.  It isn't infal-
+       lible but it usually gets it right.  You can use  --gguueessss  anywhere  you
+       would  give  an explicit format, but it tends to be slower and for that
+       reason is not recommended.  Also, for automated build systems, you want
+       hard  errors as early as possible; if a file isn't in the expected for-
+       mat, you want it to barf.
+
+MMAANNGGLLIINNGG TTHHEE DDAATTAA
+       It is possible to change the values of the data bytes in several ways.
+
+              srec_cat _i_n_f_i_l_e -and 0xF0 -o _o_u_t_f_i_l_e
+
+       The above example performs a bit-wise AND of the data  bytes  with  the
+       0xF0  mask.   The addresses of records are unchanged.  I can't actually
+       think of a use for this filter.
+
+              srec_cat _i_n_f_i_l_e -or 0x0F -o _o_u_t_f_i_l_e
+
+       The above example performs a bit-wise OR of the  data  bytes  with  the
+       0x0F  bits.   The addresses of records are unchanged.  I can't actually
+       think of a use for this filter.
+
+              srec_cat _i_n_f_i_l_e -xor 0xA5 -o _o_u_t_f_i_l_e
+
+       The above example performs a bit-wise exclusive OR of  the  data  bytes
+       with the 0xA5 bits.  The addresses of records are unchanged.  You could
+       use this to obfuscate the contents of your EPROM.
+
+              srec_cat _i_n_f_i_l_e -not -o _o_u_t_f_i_l_e
+
+       The above example performs a bit-wise  NOT  of  the  data  bytes.   The
+       addresses of records are unchanged.  Security by obscurity?
+
+CCOOPPYYRRIIGGHHTT
+       _s_r_e_c___c_a_t version 1.64
+       Copyright  (C)  1998,  1999,  2000, 2001, 2002, 2003, 2004, 2005, 2006,
+       2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 Peter Miller
+
+       The _s_r_e_c___c_a_t program comes with ABSOLUTELY NO WARRANTY; for details use
+       the '_s_r_e_c___c_a_t _-_V_E_R_S_i_o_n _L_i_c_e_n_s_e' command.  This is free software and you
+       are welcome to redistribute it under certain  conditions;  for  details
+       use the '_s_r_e_c___c_a_t _-_V_E_R_S_i_o_n _L_i_c_e_n_s_e' command.
+
+MMAAIINNTTAAIINNEERR
+       Scott Finneran   E-Mail:   scottfinneran@yahoo.com.au
+       Peter Miller     E-Mail:   pmiller@opensource.org.au
+
+
+
+Reference Manual                    SRecord                   srec_examples(1)

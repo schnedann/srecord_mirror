@@ -1,0 +1,124 @@
+srec_mem(5)                   File Formats Manual                  srec_mem(5)
+
+
+
+NNAAMMEE
+       srec_mem - Lattice Memory Initialization format
+
+DDEESSCCRRIIPPTTIIOONN
+       A  Lattice  Memory Initialization format (.mem), by Lattice Semiconduc-
+       tor, file is an ASCII text file that consists of a header  followed  by
+       lines of memory data.
+
+   SSyynnttaaxx
+       The  data  must  be  in one of the following formats: Bin (binary), Hex
+       (hexadecimal), or Address-Hex (described below).
+
+       For hexadecimal values, both upper and lower case can be used.  If  the
+       data has fewer bits than the specified data width, the most significant
+       bits are filled with 0.  Any address not specified will be filled  with
+       0.
+
+       Comments  can be added at any point after the header (defined below) by
+       starting the comment with a pound sign (#) or two  slashes  (//).   The
+       comment  then includes everything to the end of the line.  Comments may
+       be added to any of the data, but never add comments to the header.
+
+   HHeeaaddeerr
+       A .mem file starts with a header, which declares the file format,  mem-
+       ory size, and address and data display radix for Memory Generator.  The
+       syntax of the header is:
+              #Format=Bin | Hex | AddrHex
+              #Depth=1 _t_o 65536
+              #Width=1 _t_o 256
+              #AddrRadix=_i_n_d_e_x_-_n_u_m_b_e_r
+              #DataRadix=_i_n_d_e_x_-_n_u_m_b_e_r
+              #Data
+       The _i_n_d_e_x_-_n_u_m_b_e_r can be one of the following  numbers.   AddrRadix  and
+       DataRadix can have different values.
+              Binary: 0
+              Octal: 1
+              Decimal: 2
+              Hexadecimal: 3
+
+       For  example,  the  following  header  says  the .mem file is using the
+       binary format for a 32x8 memory.  When displayed in  Memory  Generator,
+       the  address will be shown in hexadecimal and the data will be shown in
+       binary.
+              #Format=Bin
+              #Depth=32
+              #Width=8
+              #AddrRadix=3
+              #DataRadix=0
+              #Data
+
+   BBiinn aanndd HHeexx FFoorrmmaattss
+       The data is represented in binary or hexadecimal format.  Each line  of
+       data  specifies  the  contents  for  one memory location, starting with
+       address 0.  That is, the first line is for address 0, the  second  line
+       is for address 1, and so on.  For each line, the data is interpreted as
+       least significant bit on the right.
+
+       For example, in the Bin format, the  following  lines  will  initialize
+       address 0 to "00011011", address 1 to "11111010" (assuming it is a 32x8
+       memory).
+              # for a 32x8 memory
+              11011
+              11111010
+
+       In the Hex format, the following lines will  initialize  address  0  to
+       "003B", address 1 to "FB0A" (assuming it is a 32x16 memory).
+              # for a 32x16 memory
+              3B
+              FB0A
+
+   AAddddrrHHeexx
+       The  data  is represented in hexadecimal format.  Each line consists of
+       an address followed by a colon and then any number of data words, sepa-
+       rated by spaces:
+              _a_d_d_r_e_s_s:: _d_a_t_a _d_a_t_a_> _d_a_t_a...
+       The  data  will be applied starting at <address> and filling in sequen-
+       tially from there.
+
+       For example:
+              A0:03 F3 3E 4F
+              B2:3B 9F
+       will initialize A0 with 03, A1 with F3, A2 with 3E, A3 with 4F, B2 with
+       3B,  and B3 with 9F.  The other addresses will be initialized to 0.  So
+       A4 through B1 will be set to 0.
+
+   SSeeee AAllssoo
+       http://help.latticesemi.com/docs/webhelp/eng/wwhelp/wwhimpl/common/html/wwhelp.htm#href=Design%20Entry/memory_initialization_file.htm#1371843&single=true
+
+   SSiizzee MMuullttiipplliieerr
+       The size multiplier depends on  the  width  selected.   As  files  grow
+       larger,  their  size multipliers will approach those in the table, from
+       above.
+
+       Width   Linux   Windows
+         8     2.96     3.0
+        16     2.47     2.5
+        32     2.25     2.28
+        64     2.13     2.15
+
+   BByyttee OOrrddeerr
+       This format is implicitly big-endian.  Use a -byte-swap filter  if  you
+       need something different.
+
+CCOOPPYYRRIIGGHHTT
+       _s_r_e_c___m_e_m version 1.64
+       Copyright  (C)  1998,  1999,  2000, 2001, 2002, 2003, 2004, 2005, 2006,
+       2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 Peter Miller
+
+       The _s_r_e_c___m_e_m program comes with ABSOLUTELY NO WARRANTY; for details use
+       the '_s_r_e_c___m_e_m _-_V_E_R_S_i_o_n _L_i_c_e_n_s_e' command.  This is free software and you
+       are welcome to redistribute it under certain  conditions;  for  details
+       use the '_s_r_e_c___m_e_m _-_V_E_R_S_i_o_n _L_i_c_e_n_s_e' command.
+
+MMAAIINNTTAAIINNEERR
+       Scott Finneran   E-Mail:   scottfinneran@yahoo.com.au
+       Peter Miller     E-Mail:   pmiller@opensource.org.au
+
+
+
+Reference Manual                    SRecord                        srec_mem(5)

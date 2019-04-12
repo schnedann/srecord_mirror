@@ -1,0 +1,52 @@
+srec_ppx(5)                   File Formats Manual                  srec_ppx(5)
+
+
+
+NNAAMMEE
+       srec_ppx - Stag Prom Programmer hexadecimal format
+
+DDEESSCCRRIIPPTTIIOONN
+       This is the native hexadecimal format of the Stag Prom Programmer.
+
+   FFoorrmmaatt
+       The file must start with an asterisk '*' on a line by itself.
+
+       Each line has a 16-bit address, followed by 8-bit bytes.
+
+       The end is indicated by '$S' folloowed by a 16-bit checksum of the data
+       bytes as 4 hex digits.
+
+   CCoommmmaanndd LLiinnee OOppttiioonn
+       This format is specified using the --PPPPXX command line option.
+
+   SSiizzee MMuullttiipplliieerr
+       In general, binary data will expand in sized by approximately  3  times
+       when represented with this format (worse if you use shorter lines).
+
+EEXXAAMMPPLLEE
+       Here is an example PPX file.  It contains the data "Hello, World" to be
+       loaded at bytes address 0x0000 (but remember,  the  file  contents  are
+       always multiples of four bytes).
+              *
+              0000 48 65 6C 6C 6F 2C 20 57 6F 72 6C 64 21 0A $S0473
+
+SSEEEE AALLSSOO
+       http://matthieu.benoit.free.fr/pdf/pp39.pdf http://www.stag.co.uk/
+
+CCOOPPYYRRIIGGHHTT
+       _s_r_e_c___c_a_t version 1.64
+       Copyright  (C)  1998,  1999,  2000, 2001, 2002, 2003, 2004, 2005, 2006,
+       2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 Peter Miller
+
+       The _s_r_e_c___c_a_t program comes with ABSOLUTELY NO WARRANTY; for details use
+       the '_s_r_e_c___c_a_t _-_V_E_R_S_i_o_n _L_i_c_e_n_s_e' command.  This is free software and you
+       are welcome to redistribute it under certain  conditions;  for  details
+       use the '_s_r_e_c___c_a_t _-_V_E_R_S_i_o_n _L_i_c_e_n_s_e' command.
+
+MMAAIINNTTAAIINNEERR
+       Scott Finneran   E-Mail:   scottfinneran@yahoo.com.au
+       Peter Miller     E-Mail:   pmiller@opensource.org.au
+
+
+
+Reference Manual                    SRecord                        srec_ppx(5)

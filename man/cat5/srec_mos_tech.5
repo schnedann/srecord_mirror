@@ -1,0 +1,107 @@
+srec_mos_tech(5)              File Formats Manual             srec_mos_tech(5)
+
+
+
+NNAAMMEE
+       srec_mos_tech - MOS Technology file format
+
+DDEESSCCRRIIPPTTIIOONN
+       The  MOS Technology format allows binary files to be uploaded and down-
+       loaded between between a computer system (such as a PC,  Macintosh,  or
+       workstation)  and  an emulator or evaluation board for microcontrollers
+       and microprocessors.
+
+   TThhee LLiinneess
+       Each line consists of 5 fields.  These are the  length  field,  address
+       field,  data  field,  and  the checksum.  The lines always start with a
+       semicolon (;) character.
+
+   TThhee FFiieellddss
+                   +--+--------+---------+------+----------+------+
+                   |; | Length | Address | Data | Checksum | CRLF |
+                   +--+--------+---------+------+----------+------+
+       Length  The record length field is a 2 character (1  byte)  field  that
+               specifies  the  number  of data bytes in the record.  Typically
+               this is 24 or less.
+
+       Address This is a 2-byte address that specifies where the data  in  the
+               record is to be loaded into memory, big-endian.
+
+       Data    The  data  field  contains the executable code, memory-loadable
+               data or descriptive information to be transferred.
+
+       Checksum
+               The checksum is an 2-byte field that represents the least  sig-
+               nificant  two bytes of the the sum of the values represented by
+               the pairs of characters making up the record's length, address,
+               and data fields, big-endian.
+
+   EEnndd ooff FFiillee
+       The  final  line  should  have a data length of zero, and the data line
+       count in the address field.  The checksum is not the usual checksum, it
+       is instead a repeat of the data line count.
+
+   SSiizzee MMuullttiipplliieerr
+       In  general,  binary  data  will  expand in sized by approximately 2.54
+       times when represented with this format.
+
+EEXXAAMMPPLLEE
+       Here is an example MOS Technology format file.  It  contains  the  data
+       "Hello, World" to be loaded at address 0.
+              ;0C000048656C6C6F2C20576F726C640454
+              ;0000010001
+
+CCOOPPYYRRIIGGHHTT
+       _s_r_e_c___c_a_t version 1.64
+       Copyright  (C)  1998,  1999,  2000, 2001, 2002, 2003, 2004, 2005, 2006,
+       2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 Peter Miller
+
+       The _s_r_e_c___c_a_t program comes with ABSOLUTELY NO WARRANTY; for details use
+       the '_s_r_e_c___c_a_t _-_V_E_R_S_i_o_n _L_i_c_e_n_s_e' command.  This is free software and you
+       are welcome to redistribute it under certain  conditions;  for  details
+       use the '_s_r_e_c___c_a_t _-_V_E_R_S_i_o_n _L_i_c_e_n_s_e' command.
+
+MMAAIINNTTAAIINNEERR
+       Scott Finneran   E-Mail:   scottfinneran@yahoo.com.au
+       Peter Miller     E-Mail:   pmiller@opensource.org.au
+
+KKIIMM--11 UUsseerr MMaannuuaall -- AAppppeennddiixx FF -- PPaappeerr TTaappee FFoorrmmaatt
+       _(_T_h_e       _f_o_l_l_o_w_i_n_g      _i_n_f_o_r_m_a_t_i_o_n      _i_s      _r_e_p_r_o_d_u_c_e_d      _f_r_o_m
+       _h_t_t_p_:_/_/_u_s_e_r_s_._t_e_l_e_n_e_t_._b_e_/_k_i_m_1_-_6_5_0_2_/_6_5_0_2_/_u_s_r_m_a_n_._h_t_m_l_#_F _j_u_s_t  _i_n  _c_a_s_e  _i_t
+       _v_a_n_i_s_h_e_s _f_r_o_m _t_h_e _W_e_b_._)
+
+       The paper tape LOAD and DUMP routines store and retrieve data in a spe-
+       cific format designed to insure error free recovery.  Each byte of data
+       to  be  stored  is  converted to two half bytes.  The half bytes (whose
+       possible values are 0 to F HEX) are translated into their ASCII equiva-
+       lents and written out onto paper tape in this form.
+
+       Each  record  outputted  begins with a ";" character (ASCII 3B) to mark
+       the start of a valid record.  The next byte transmitted (18HEX) or  (24
+       decimal)  is  the  number  of  data bytes contained in the record.  The
+       record's starting address High (1 byte, 2 characters), starting address
+       Lo  (1  byte, 2 characters), and data (24 bytes, 48 characters) follow.
+       Each record is terminated by the record's check-sum (2 bytes, 4 charac-
+       ters),  a  carriage  return  (ASCII  0D), line feed (ASCII 0A), and six
+       "NULL" characters (ASCII 00).  (NULL characters cause a blank  area  on
+       the paper tape.)
+
+       The  last record transmitted has zero data bytes (indicated by ;00) The
+       starting address field is replaced by a four digit  Hex  number  repre-
+       senting the total number of data records contained in the transmission,
+       followed by the records usual check-sum digits.   An  "XOFF"  character
+       ends the transmission.
+              ;180000FFEEDDCCBBAA0099887766554433221122334455667788990AFC
+              ;0000010001
+       During  a  "LOAD" all incoming data is ignored until a ";" character is
+       received.  The receipt of non  ASCII  data  or  a  mismatch  between  a
+       records  calculated  check-sum  and  the  check-sum read from tape will
+       cause an error condition to be recognized by  KIM.   The  check-sum  is
+       calculated by adding all data in the record except the ";" character.
+
+       The  paper tape format described is compatible with all other MOS Tech-
+       nology, Inc. software support programs.
+
+
+
+Reference Manual                    SRecord                   srec_mos_tech(5)

@@ -1,0 +1,607 @@
+srec_cat(1)                 General Commands Manual                srec_cat(1)
+
+
+
+NNAAMMEE
+       srec_cat - manipulate EPROM load files
+
+SSYYNNOOPPSSIISS
+       ssrreecc__ccaatt [ _o_p_t_i_o_n...  ] _f_i_l_e_n_a_m_e...
+       ssrreecc__ccaatt --HHeellpp
+       ssrreecc__ccaatt --VVEERRSSiioonn
+
+DDEESSCCRRIIPPTTIIOONN
+       The  _s_r_e_c___c_a_t  program is used to assemble the given input files into a
+       single output file.  The use of filters (see below) allows  significant
+       manipulations to be performed by this command.
+
+   DDaattaa OOrrddeerr
+       The data from the input files is not immediately written to the output,
+       but is stored in memory until the complete EPROM image has been  assem-
+       bled.   Data  is  then  written to the output file in ascending address
+       order.  The original ordering of the data (in those formats capable  of
+       random record ordering) is _n_o_t preserved.
+
+   DDaattaa CCoommppaarriissoonn
+       Because  input  record  order  is  not preserved, textual comparison of
+       input and output (such as the _d_i_f_f(1) or  _t_k_d_i_f_f(1)  commands)  can  be
+       misleading.  Not only can lines appear in different address orders, but
+       line lengths  and  line  termination  can  differ  as  well.   Use  the
+       _s_r_e_c___c_m_p(1) program to compare two EPROM load files.  If a text compar-
+       ison is essential, run both files through the  _s_r_e_c___c_a_t(1)  program  to
+       ensure  both  files  to  be compared have identical record ordering and
+       line lengths.
+
+   DDaattaa CCoonnfflliiccttss
+       The storing of data in memory enables the detection of data  conflicts,
+       typically caused by linker sections unintentionally overlapping.
+
+       +o A warning will be issued for each address which is redundantly set to
+         the same value.
+
+       +o A fatal error will be issued if any address is set with contradictory
+         values.   To  avoid  this  error  use an --eexxcclluuddee --wwiitthhiinn filter (see
+         _s_r_e_c___i_n_p_u_t(1)) or, to make it a warning, use the --ccoonnttrraaddiiccttoorryy--bbyytteess
+         option (see below).
+
+       +o A  warning  will be issued for input files where the data records are
+         not in strictly ascending address order.  To suppress  this  warning,
+         use the --ddiissaabbllee--sseeqquueennccee--wwaarrnniinngg option (see below).
+
+       These  features  are designed to detect problems which are difficult to
+       debug, and detects them _b_e_f_o_r_e the data is written to an EPROM and  run
+       in your embedded system.
+
+IINNPPUUTT FFIILLEE SSPPEECCIIFFIICCAATTIIOONNSS
+       Input  may  be  qualified in two ways: you may specify a data file or a
+       data generator.  format and you may specify filters to apply  to  them.
+       An input file specification looks like this:
+              _d_a_t_a_-_f_i_l_e [ _f_i_l_t_e_r ... ]
+              _d_a_t_a_-_g_e_n_e_r_a_t_o_r [ _f_i_l_t_e_r ... ]
+
+   DDaattaa FFiilleess
+       Input  from  data  files is specified by file name and format name.  An
+       input file specification looks like this:
+              _f_i_l_e_n_a_m_e [ _f_o_r_m_a_t ][ -ignore-checksums ]
+       The default format is Motorola S-Record format,  but  _m_a_n_y  others  are
+       also understood.
+
+   DDaattaa GGeenneerraattoorrss
+       It  is also possible to generate data, rather than read it from a file.
+       You may use a generator anywhere you could use a file.  An input gener-
+       ator specification looks like this:
+              --GGEENNeerraattee _a_d_d_r_e_s_s_-_r_a_n_g_e --_d_a_t_a_-_s_o_u_r_c_e
+       Generators include random data and various forms of constant data.
+
+   CCoommmmoonn MMaannuuaall PPaaggee
+       See  _s_r_e_c___i_n_p_u_t(1)  for  complete  details  of  input specifiers.  This
+       description is in a separate manual page because it is common  to  more
+       than one SRecord command.
+
+OOPPTTIIOONNSS
+       The following options are understood:
+
+       @@_f_i_l_e_n_a_m_e
+               The  named  text file is read for additional command line argu-
+               ments.  Arguments are separated by  white  space  (space,  tab,
+               newline,  _e_t_c).   There  is no wildcard mechanism.  There is no
+               quoting mechanism.  Comments, which start with '##'  and  extend
+               to the end of the line, are ignored.  Blank lines are ignored.
+
+       --OOuuttppuutt _f_i_l_e_n_a_m_e [ _f_o_r_m_a_t ]
+               This  option may be used to specify the output file to be used.
+               The special file name "-[rq] is understood to mean the standard
+               output.   Output defaults to the standard output if this option
+               is not used.
+
+               The _f_o_r_m_a_t may be specified as:
+
+               --AAbbssoolluuttee__OObbjjeecctt__MMoodduullee__FFoorrmmaatt
+                       An Intel Absolute Object Module  Format  file  will  be
+                       written.   (See  _s_r_e_c___a_o_m_f(5) for a description of this
+                       file format.)
+
+               --AAsscciiii__HHeexx
+                       An   Ascii-Hex   file   will    be    written.     (See
+                       _s_r_e_c___a_s_c_i_i___h_e_x(5)  for  a description of this file for-
+                       mat.)
+
+               --AASSMM [ _p_r_e_f_i_x ][ -_o_p_t_i_o_n... ]
+                       A series of assembler DB statements will be written.
+
+                       The optional _p_r_e_f_i_x may  be  specified  to  change  the
+                       names  of  the  symbols  generated.   The  defaults  to
+                       "eprom" if not set.
+
+                       Several options are available to modify  the  style  of
+                       output:
+
+                       --DDoott__SSTTyyllee
+                               Use  "dot"  style  pseudo-ops instead of words.
+                               For example .byte instead of the DB default.
+
+                       --HHEEXXaaddeecciimmaall__SSTTyyllee
+                               Use hexadecimal numbers in the  output,  rather
+                               than the default decimal numbers.
+
+                       --SSeeccttiioonn__SSTTyyllee
+                               By  default the generated assemble of placed at
+                               the correct address using ORG pseudo-ops.  Sec-
+                               tion  style  output  emits  tables  of  section
+                               addresses and  lengths,  so  the  data  may  be
+                               related at runtime.
+
+                       --AA443300   Generate  output  which  is  compliant  to  the
+                               a430.exe compiler as it is used,  _e_._g_.  in  IAR
+                               Embedded  Workbench.   This  is  short-hand for
+                               -section-style -hex-style
+
+                       --CCLL443300  Generate  output which is Code Composer  Essen-
+                               tials compliant, _i_._e_. the compiler of it.  This
+                               is  short-hand  for  -section-style  -hex-style
+                               -dot-style
+
+                       --OOuuttppuutt__WWoorrdd
+                               Generate  output  which  is  in  two-byte words
+                               rather than bytes.  This assumes  little-endian
+                               words; you will need to use the -Byte-Swap fil-
+                               ter if your target is big-endian.   No  attempt
+                               is  made  to  align the words onto even address
+                               boundaries; use and input filter such as
+                                       _i_n_p_u_t_-_f_i_l_e -fill 0xFF -within _i_n_p_u_t_-_f_i_l_e
+                                       -range-pad 2
+                               to pad the data to whole words first.
+
+               --AAttmmeell__GGeenneerriicc
+                       An  Atmel  Generic  file   will   be   written.    (See
+                       _s_r_e_c___a_t_m_e_l___g_e_n_e_r_i_c(5)  for  a  description of this file
+                       format.)
+
+               --BBAASSiicc  A series of BASIC DATA statements will be written.
+
+               --BB--RReeccoorrdd
+                       A Freescale  MC68EZ328  Dragonball  bootstrap  b-record
+                       format  file will be written.  (See _s_r_e_c___b_r_e_c_o_r_d(5) for
+                       a description of this file format.)
+
+               --BBiinnaarryy A raw binary file will be written.  If  you  get  unex-
+                       pected results pplleeaassee see the _s_r_e_c___b_i_n_a_r_y(5) manual for
+                       more information.
+
+               --CC--AArrrraayy [ _i_d_e_n_t_i_f_i_e_r ][ -_o_p_t_i_o_n... ]
+                       A C array defintion will be written.
+
+                       The optional _i_d_e_n_t_i_f_i_e_r is the name of the variable  to
+                       be defined, or bugus if not specified.
+
+                       --IINNCClluuddee
+                               This option asks for an include file to be gen-
+                               erated as well.
+
+                       --NNoo--CCOONNSSTT
+                               This options asks for the variables to not  use
+                               the  const  keyword (they are declared constant
+                               be default, so that they are  placed  into  the
+                               read-only segment in embedded systems).
+
+                       --CC__CCOOMMpprreesssseedd
+                               These  options  ask  for  an compressed c-array
+                               whose memory gaps will not be filled.
+
+                       --OOuuttppuutt__WWoorrdd
+                               This option asks for  an  output  which  is  in
+                               words  not in bytes.  This is little endian, so
+                               you may need to
+
+                       --PPRREEffiixx _s_t_r_i_n_g
+                               This option allows a string to be prepended  to
+                               the array definition. This is commonly used for
+                               non-standard options common to cross compilers.
+
+                       --PPOOSSTTffiixx _s_t_r_i_n_g
+                               This option allows a string to be  appended  to
+                               the array definition. This is commonly used for
+                               non-standard options common to cross compilers.
+
+               --CCOOEE    This option says to use  the  Xilinx  Coefficient  File
+                       Format  (.coe)  for  output.   (See  _s_r_e_c___c_o_e(5)  for a
+                       description of this file format.)
+
+               --CCOOssmmaacc An RCA Cosmac Elf format file will  be  written.   (See
+                       _s_r_e_c___c_o_s_m_a_c(5) for a description of this file format.)
+
+               --DDeecc__BBiinnaarryy
+                       A  DEC Binary (XXDP) format file will be written.  (See
+                       _s_r_e_c___d_e_c___b_i_n_a_r_y(5) for a description of this file  for-
+                       mat.)
+
+               --EElleekkttoorr__MMoonniittoorr5522
+                       This  option  says  to  use the EMON52 format file when
+                       writing the file.  (See _s_r_e_c___e_m_o_n_5_2(5) for  a  descrip-
+                       tion of this file format.)
+
+               --FFAAIIrrcchhiilldd
+                       This  option  says  to use the Fairchild Fairbug format
+                       file when writing the file.  (See _s_r_e_c___f_a_i_r_c_h_i_l_d(5) for
+                       a description of this file format.)
+
+               --FFaasstt__LLooaadd
+                       This  option says to use the LSI Logic Fast Load format
+                       file when writing the file.  (See _s_r_e_c___f_a_s_t_l_o_a_d(5)  for
+                       a description of this file format.)
+
+               --FFoorrmmaatttteedd__BBiinnaarryy
+                       A  Formatted  Binary format file will be written.  (See
+                       _s_r_e_c___f_o_r_m_a_t_t_e_d___b_i_n_a_r_y(5) for a description of this file
+                       format.)
+
+               --FFOORRTTHH [ -_o_p_t_i_o_n ]
+                       A  FORTH input file will be written.  Each line of out-
+                       put includes a byte value, an address, and a command.
+
+                       --RRAAMM    The store command is C!  This is the default.
+
+                       --EEEEPPRROOMM The store command is EEC!
+
+               --FFoouurr__PPaacckkeedd__CCooddee
+                       This option says to use the PFC format file when  writ-
+                       ing  the  file.   (See _s_r_e_c___f_p_d(5) for a description of
+                       this file format.)
+
+               --HHEEXX__DDuummpp
+                       A human readable  hexadecimal  dump  (including  ASCII)
+                       will be printed.
+
+               --IIDDTT    An IDT System Integration Manager (IDT/sim) binary file
+                       will be written.  (See _s_r_e_c___i_d_t(5) for a description of
+                       this file format.)
+
+               --IInntteell  An  Intel  hex  format  file  will  be  written.   (See
+                       _s_r_e_c___i_n_t_e_l(5) for a description of this  file  format.)
+                       The  default is to emit "i32hex" 32-bit linear address-
+                       ing; if  you  want  "i16hex"  20-bit  extended  segment
+                       addressing  use  the  --aaddddrreessss--lleennggtthh==33  option, if you
+                       want  "i8hex"  16-bit  addressing  use  the   --aaddddrreessss--
+                       lleennggtthh==22 option.
+
+               --IInntteell__HHeeXX__1166
+                       An  Intel-16  hex format (INHX16) file will be written.
+                       (See _s_r_e_c___i_n_t_e_l_1_6(5) for a  description  of  this  file
+                       format.)
+
+               --LLaattttiiccee__MMeemmoorryy__IInniittiiaalliizzaattiioonn__FFoorrmmaatt [[ _w_i_d_t_h ]]
+                       The  Memory  Initialization  Format  (.mem)  by Lattice
+                       Semiconductor is understood for writing only.   (A.k.a.
+                       --MMEEMM)  (See  _s_r_e_c___m_e_m(5) for a description of this file
+                       format.)
+
+               --LLOOGGiissiimm
+                       LOginsim   logic   simuator   uses   the   format   See
+                       --ssrreecc__llooggiissiimm(5) form more information.
+
+               --MMeemmoorryy__IInniittiiaalliizzaattiioonn__FFiillee [ _w_i_d_t_h ]
+                       Memory  Initialization File (MIF) by Altera format will
+                       be written.   The  _w_i_d_t_h  defaults  to  8  bits.   (See
+                       _s_r_e_c___m_i_f(5) for a description of this file format.)
+
+               --MMiippss__FFllaasshh__BBiigg__EEnnddiiaann
+
+               --MMiippss__FFllaasshh__LLiittttllee__EEnnddiiaann
+                       MIPS   Flash   file   format  will  be  written.   (See
+                       _s_r_e_c___m_i_p_s___f_l_a_s_h(5) for a description of this file  for-
+                       mat.)
+
+               --MMOOSS__TTeecchhnnoollooggiieess
+                       An  Mos Technologies format file will be written.  (See
+                       _s_r_e_c___m_o_s___t_e_c_h(5) for a description of  this  file  for-
+                       mat.)
+
+               --MMoottoorroollaa [ _w_i_d_t_h ]
+                       A   Motorola  S-Record  file  will  be  written.   (See
+                       _s_r_e_c___m_o_t_o_r_o_l_a(5) for a description of  this  file  for-
+                       mat.)   This is the default output format.  By default,
+                       the smallest possible address length is  emitted,  this
+                       will  be S19 for data in the first 64KB; if you wish to
+                       force S28 use the --aaddddrreessss--lleennggtthh==33 option; if you wish
+                       to force S37 use the --aaddddrreessss--lleennggtthh==44 option
+
+                       The  optional  _w_i_d_t_h  argument  describes the number of
+                       bytes which form each  address  multiple.   For  normal
+                       uses  the default of one (1) byte is appropriate.  Some
+                       systems with 16-bit  or  32-bit  targets  mutilate  the
+                       addresses  in  the  file; this option will imitate that
+                       behavior.  Unlike most other parameters, this one  can-
+                       not be guessed.
+
+               --MMssBBiinn  This  option  says  to  use the Windows CE Binary Image
+                       Data Format to write the file.  See _s_r_e_c___m_s_b_i_n(5) for a
+                       description of this file format.
+
+               --NNeeeeddhhaamm__HHeexxaaddeecciimmaall
+                       This  option  says to use the Needham Electronics ASCII
+                       file format to write the file.  See _s_r_e_c___n_e_e_d_h_a_m(5) for
+                       a description of this file format.
+
+               --OOhhiioo__SScciieennttiiffiicc
+                       This option says to use the Ohio Scientific hexadecimal
+                       format.  See _s_r_e_c___o_s_6_5_v(5) for a  description  of  this
+                       format.
+
+               --PPPPBB    This option says to use the Stag Prom Programmer binary
+                       format.  See _s_r_e_c___p_p_b(5) for a description of this for-
+                       mat.
+
+               --PPPPXX    This  option says to use the Stag Prom Programmer hexa-
+                       decimal format.  See _s_r_e_c___p_p_x(5) for a  description  of
+                       this format.
+
+               --SSIIGGnneettiiccss
+                       This  option says to use the Signetics hex format.  See
+                       _s_r_e_c___s_i_g_n_e_t_i_c_s(5) for a description of this format.
+
+               --SSPPAAssmm  This option says to use the SPASM assembler output for-
+                       mat   (commonly   used   by   PIC   programmers).   See
+                       _s_r_e_c___s_p_a_s_m(5) for a description of this format.
+
+               --SSPPAAssmm__LLiittttllee__EEnnddiiaann
+                       This option says to use the SPASM assembler output for-
+                       mat  (commonly  used by PIC programmers).  But with the
+                       data the other way around.
+
+               --SSTTeewwiiee A Stewie binary format  file  will  be  written.   (See
+                       _s_r_e_c___s_t_e_w_i_e(5) for a description of this file format.)
+
+               --TTeekkttrroonniixx
+                       A  Tektronix  hex  format  file  will be written.  (See
+                       _s_r_e_c___t_e_k_t_r_o_n_i_x(5) for a description of this  file  for-
+                       mat.)
+
+               --TTeekkttrroonniixx__EExxtteennddeedd
+                       A  Tektronix  extended hex format file will be written.
+                       (See _s_r_e_c___t_e_k_t_r_o_n_i_x___e_x_t_e_n_d_e_d(5) for  a  description  of
+                       this file format.)
+
+               --TTeexxaass__IInnssttrruummeennttss__TTaaggggeedd
+                       A   TI-Tagged   format  file  will  be  written.   (See
+                       _s_r_e_c___t_i___t_a_g_g_e_d(5) for a description of this  file  for-
+                       mat.)
+
+               --TTeexxaass__IInnssttrruummeennttss__TTaaggggeedd__1166
+                       A  Texas  Instruments  SDSMAC  320  format file will be
+                       written.  (See _s_r_e_c___t_i___t_a_g_g_e_d___1_6(5) for  a  description
+                       of this file format.)
+
+               --TTeexxaass__IInnssttrruummeennttss__TTeeXXTT
+                       This  option  says  to  use  the  Texas Instruments TXT
+                       (MSP430) format to write the file.  See  _s_r_e_c___t_i___t_x_t(5)
+                       for a description of this file format.
+
+               --TTRRSS8800  This  option  says to use the Radio Shack TRS-80 object
+                       file format to write the file.  See _s_r_e_c___t_r_s_8_0(5) for a
+                       description of this file format.
+
+               --VVHHddll [ _b_y_t_e_s_-_p_e_r_-_w_o_r_d [ _n_a_m_e ]]
+                       A VHDL format file will be written.  The _b_y_t_e_s_-_p_e_r_-_w_o_r_d
+                       defaults to one,  the  _n_a_m_e  defaults  to  eprom.   The
+                       _e_t_c_/_x___d_e_f_s___p_a_c_k_._v_h_d  file  in  the  source distribution
+                       contains an example ROM definitions pack for the  type-
+                       independent output.  You may need to use the -byte-swap
+                       filter to get the byte order you want.
+
+               --VVMMeemm [ _m_e_m_o_r_y_-_w_i_d_t_h ]
+                       A Verilog VMEM format file will be written.   The  _m_e_m_-
+                       _o_r_y_-_w_i_d_t_h may be 8, 16, 32, 64 or 128 bits; defaults to
+                       32 if unspecified.  (See _s_r_e_c___v_m_e_m(5) for a description
+                       of  this  file format.)  You may need to use the -byte-
+                       swap filter to get the byte order you want.
+
+               --WWIILLssoonn A wilson format file will be written.   (See  _s_r_e_c___w_i_l_-
+                       _s_o_n(5) for a description of this file format.)
+
+       --AAddddrreessss__LLeennggtthh _n_u_m_b_e_r
+               This option many be used to specify the minimum number of bytes
+               to be used in the output to represent an address (padding  with
+               leading  zeros if necessary).  This helps when talking to imbe-
+               cilic EPROM programmer devices which do not fully implement the
+               format specification.
+
+       --CCRRLLFF   This   option  is  short-hand  for  the  --lliinnee--tteerrmmiinnaattiioonn==ccrrllff
+               option.  For use with  hare-brained  EPROM  programmer  devices
+               which  assume all the world uses Evil Bill's operating system's
+               line termination.
+
+       --DDaattaa__OOnnllyy
+               This option implies the  --ddiissaabbllee==hheeaaddeerr,  --ddiissaabbllee==ddaattaa--ccoouunntt,
+               --ddiissaabbllee==eexxeecc--ssttaarrtt--aaddddrreessss and --ddiissaabbllee==ffooootteerr options.
+
+       --DDIISSaabbllee _f_e_a_t_u_r_e_-_n_a_m_e
+               This  option  is used to disable the output of a named feature.
+               See the --eennaabbllee option for a description of the available  fea-
+               tures.
+
+       --EENNaabbllee _f_e_a_t_u_r_e_-_n_a_m_e
+               This option is used to enable the output of a named feature.
+
+               Header  This  feature  controls the presence of header records,
+                       records which appear before the data  itself.   Headers
+                       often, but not always, include descriptive text.
+
+               Execution_Start_Address
+                       This  feature  controls the presence of execution start
+                       address records, which is where the monitor  will  jump
+                       to  and start executing code once the hex file has fin-
+                       ished loading.
+
+               Data_Count
+                       This feature controls the presence of data record count
+                       records,  which  appear  aftre  the data, and state how
+                       many data  records  preceeded  them.   Usually  a  data
+                       integrity mechanism.
+
+               Footer  This  feature  controls the presence of a file termina-
+                       tion record, one that _d_o_e_s _n_o_t double as  an  execution
+                       start address record.
+
+               Optional_Address
+                       In formats that have the address and the data separated
+                       or partially separated (as opposed to having a complete
+                       address  in  every  record)  it  is possible to disable
+                       emitting the first address where that address would  be
+                       zero, as these format often default the address to zero
+                       if no address is seen beofre  the  first  data  record.
+                       This is disabled by default, the zero address is always
+                       emitted.
+
+               Not all formats have all of the above features.  Not  all  for-
+               mats are able to optionally omit any or all the above features.
+               Feature names may  be  abbreviated  like  command  line  option
+               names.
+
+       --EExxeeccuuttiioonn__SSttaarrtt__AAddddrreessss _n_u_m_b_e_r
+               This  option may be used to set the execution start address, in
+               those formats which support it.  The execution start address is
+               where  the  monitor  will jump to and start executing code once
+               the hex file has finished loading, think  of  it  as  a  "goto"
+               address.   Usually  ignored  by EPROM programmer devices.  This
+               option implies the --eennaabbllee==eexxeecc--ssttaarrtt--aaddddrr option.
+
+               Please note: the execution start address is a different concept
+               than  the first address in memory of your data.  If you want to
+               change where your data starts in memory, use the  --ooffffsseett  fil-
+               ter.
+
+       --HHEEAAddeerr _s_t_r_i_n_g
+               This  option  may  be  used to set the header comment, in those
+               formats  which   support   it.    This   option   implies   the
+               --eennaabbllee==hheeaaddeerr option.
+
+               If  you need to inject binary data into the header, use the URL
+               encoding that uses % followed  by  two  hexadeimal  characters.
+               For example a backspace would be encoded as "%08".
+
+       --IIGGnnoorree__CChheecckkssuummss
+               The  --IIGGnnoorree--CChheecckkssuummss  option  may be used to disable checksum
+               validation of input files, for those formats which have  check-
+               sums  at  all.  Note that the checksum values are still read in
+               and parsed (so it is still an error if they  are  missing)  but
+               their  values  are not checked.  Used after an input file name,
+               the option affects that file alone; used anywhere else  on  the
+               command line, it applies to all following files.
+
+       --LLiinnee__TTeerrmmiinnaattiioonn _s_t_y_l_e_-_n_a_m_e
+               This  option  may be used to specify line termination style for
+               text output.  The default is to use the host operating system's
+               default  line  termination style (but Cygwin behaves as if it's
+               Unix).  Use this option with  caution,  because  it  will  also
+               introduce extra (i.e. wrong) CR bytes into binary formats.
+
+               Carriage_Return_Line_Feed
+                   Use  the CRLF line termination style, typical of DOS and M$
+                   Windows.
+
+               NewLine
+                   Use the NL line termination  style,  typical  of  Unix  and
+                   Linux.
+
+               Carriage_Return
+                   Use  the CR line termination style, typical of Apple Macin-
+                   tosh.
+
+               All other line termination style names  will  produce  a  fatal
+               error.  Style names may be abbreviated like command line option
+               names.
+
+       --LLiinnee__LLeennggtthh _n_u_m_b_e_r
+               This option may be used to limit the length of the output lines
+               to  at most _n_u_m_b_e_r characters.  (Not meaningful for binary file
+               format.)   Defaults  to  something  less  than  80  characters,
+               depending  on  the  format.  If you need to control the maximum
+               number   of   bytes   in   each   output   record,   use    the
+               ----OOuuppuutt__BBlloocckk__SSiizzee option.
+
+       --OOuuttppuutt__BBlloocckk__SSiizzee _n_u_m_b_e_r
+               This  option  may  be  used to specify the exact number of data
+               bytes to appear in each output record.  There  are  format-spe-
+               cific  limitations  on this value, you will get an error if the
+               value isn't valid.  If you need to control the  maximum  number
+               of  characters  on a line of text output, use the ----LLiinnee__LLeennggtthh
+               option.
+
+       --OOuuttppuutt__BBlloocckk__PPaacckkiinngg
+               From time to time, with large files, you may notice  that  your
+               data  records  are  spit  unexpectedly on output.  This usually
+               happens where record lengths are not a power  of  2.   If  this
+               bothers  you (or your comparison tools) this option may be used
+               to repack the output so that SRecord's  internal  block  bound-
+               aries are not visable in the output.
+
+       --OOuuttppuutt__BBlloocckk__AAlliiggnnmmeenntt
+               This  option  is  similar  to the --OOuuttppuutt__BBlloocckk__PPaacckkiinngg option,
+               except that short records are used after holes to cause  subse-
+               quent records to be placed on a block size boundary.
+
+       --EEnnaabbllee__SSeeqquueennccee__WWaarrnniinnggss
+               This  option  may  be used to enable warnings about input files
+               where the data records are not in  strictly  ascending  address
+               order.  Only one warning is issued per input file.  This is the
+               default.
+
+               NNoottee:: the output of _s_r_e_c___c_a_t(1) is always in this order.
+
+               NNoottee:: This option must be used _b_e_f_o_r_e the input file.  This  is
+               because  if  there  are several files on the command line, each
+               may need different settings.   The  setting  remains  in  force
+               until the next --DDiissaabbllee__SSeeqquueennccee__WWaarrnniinnggss option.
+
+       --DDiissaabbllee__SSeeqquueennccee__WWaarrnniinnggss
+               This  option  may be used to disable warnings about input files
+               where the data records are not in  strictly  ascending  address
+               order.
+
+               NNoottee:: This option must be used _b_e_f_o_r_e the offending input file.
+               This is because if there are several files on the command line,
+               each may need different settings.  The setting remains in force
+               until the next --EEnnssaabbllee__SSeeqquueennccee__WWaarrnniinnggss option.
+
+       All other options will produce a diagnostic error.
+
+       All options may be abbreviated; the abbreviation is documented  as  the
+       upper  case  letters,  all  lower  case letters and underscores (_) are
+       optional.  You must use consecutive sequences of optional letters.
+
+       All options are case insensitive, you may type them in  upper  case  or
+       lower case or a combination of both, case is not important.
+
+       For example: the arguments "-help", "-HEL" and "-h" are all interpreted
+       to mean the --HHeellpp option.  The argument "-hlp" will not be  understood,
+       because consecutive optional characters were not supplied.
+
+       Options  and  other  command line arguments may be mixed arbitrarily on
+       the command line.
+
+       The GNU long option names are understood.  Since all option  names  for
+       _s_r_e_c___c_a_t  are  long,  this  means  ignoring the extra leading "-".  The
+       "----_o_p_t_i_o_n==_v_a_l_u_e" convention is also understood.
+
+EEXXIITT SSTTAATTUUSS
+       The _s_r_e_c___c_a_t command will exit with a status of 1 on  any  error.   The
+       _s_r_e_c___c_a_t  command  will  only  exit  with a status of 0 if there are no
+       errors.
+
+CCOOPPYYRRIIGGHHTT
+       _s_r_e_c___c_a_t version 1.64
+       Copyright (C) 1998, 1999, 2000, 2001, 2002,  2003,  2004,  2005,  2006,
+       2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 Peter Miller
+
+       The _s_r_e_c___c_a_t program comes with ABSOLUTELY NO WARRANTY; for details use
+       the '_s_r_e_c___c_a_t _-_V_E_R_S_i_o_n _L_i_c_e_n_s_e' command.  This is free software and you
+       are  welcome  to  redistribute it under certain conditions; for details
+       use the '_s_r_e_c___c_a_t _-_V_E_R_S_i_o_n _L_i_c_e_n_s_e' command.
+
+MMAAIINNTTAAIINNEERR
+       Scott Finneran   E-Mail:   scottfinneran@yahoo.com.au
+       Peter Miller     E-Mail:   pmiller@opensource.org.au
+
+
+
+Reference Manual                    SRecord                        srec_cat(1)

@@ -1,0 +1,83 @@
+srec_binary(5)                File Formats Manual               srec_binary(5)
+
+
+
+NNAAMMEE
+       srec_binary - binary file format
+
+DDEESSCCRRIIPPTTIIOONN
+       It is possible to read and write binary files using _s_r_e_c___c_a_t(1).
+
+   FFiillee HHoolleess
+       A file hole is a portion of a regular file that contains NUL characters
+       and is not stored in any data block on disk.  Holes are a long-standing
+       feature  of  Unix files.  For instance, the following Unix command cre-
+       ates a file in which the first bytes are a hole:
+
+              $ echo -n "X" | dd of=/tmp/hole bs=1024 seek=6
+              $
+
+       Now /tmp/hole has 6,145 characters (6,144  NUL  characters  plus  an  X
+       character), yet the file occupies just one data block on disk.
+
+       File  holes were introduced to avoid wasting disk space.  They are used
+       extensively by database applications and, more generally, by all appli-
+       cations that perform hashing on files.
+
+       See   http://www.oreilly.com/catalog/linuxkernel2/chapter/ch17.pdf  for
+       more information.
+
+   RReeaaddiinngg
+       The size of binary files is taken from the size of the file on the file
+       system.   If the file has holes these will read as blocks of NUL (zero)
+       data, as there is no elegant way to detect Unix file  holes.   In  gen-
+       eral,  you  probably  want to use the --uunnffiillll filter to find and remove
+       large swathes of zero bytes.
+
+   WWrriittiinngg
+       In producing a binary file, _s_r_e_c___c_a_t(1) honours the address information
+       and  places the data into the binary file at the addresses specified in
+       the hex file.  This usually results on holes in  the  file.   Sometimes
+       alarmingly large file sizes are reported as a result.
+
+       If  you  are  on  a brain-dead operating system without file holes then
+       there are going to be real data blocks containing real zero bytes,  and
+       consuming real amounts of disk space.  Upgrade - I suggest Linux.
+
+       To make a file of the size you expect, use
+
+              srec_info foo.s19
+
+       to find the lowest address, then use
+
+              srec_cat foo.s19 -intel -offset -_n -o foo.bin -binary
+
+       where  _n is the lowest address present in the foo.s19 file, as reported
+       by _s_r_e_c___i_n_f_o(1).  The nneeggaattiivvee offset serves to move the data  down  to
+       have an origin of zero.
+
+SSEEEE AALLSSOO
+       _s_r_e_c___i_n_p_u_t(1)
+               for a description of the --uunnffiillll filter
+
+       _s_r_e_c___e_x_a_m_p_l_e_s(1)
+               has  a  section  about  binary files, and ways of automagically
+               offseting the data back to zero in a single command.
+
+CCOOPPYYRRIIGGHHTT
+       _S_R_r_e_c_o_r_d version 1.64
+       Copyright (C) 1998, 1999, 2000, 2001, 2002,  2003,  2004,  2005,  2006,
+       2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 Peter Miller
+
+       The _S_R_r_e_c_o_r_d program comes with ABSOLUTELY NO WARRANTY; for details use
+       the '_S_R_r_e_c_o_r_d _-_V_E_R_S_i_o_n _L_i_c_e_n_s_e' command.  This is free software and you
+       are  welcome  to  redistribute it under certain conditions; for details
+       use the '_S_R_r_e_c_o_r_d _-_V_E_R_S_i_o_n _L_i_c_e_n_s_e' command.
+
+MMAAIINNTTAAIINNEERR
+       Scott Finneran   E-Mail:   scottfinneran@yahoo.com.au
+       Peter Miller     E-Mail:   pmiller@opensource.org.au
+
+
+
+Reference Manual                    SRecord                     srec_binary(5)
